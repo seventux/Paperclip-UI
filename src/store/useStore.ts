@@ -6,6 +6,7 @@ import type {
   RealtimeEvent,
   RealtimeMode,
   ActiveView,
+  AppNotification,
 } from '../types'
 
 interface AppState {
@@ -17,7 +18,12 @@ interface AppState {
   activeView: ActiveView
   realtimeMode: RealtimeMode
   heartbeats: Record<string, number>
+  notifications: AppNotification[]
   setSelectedEmployee: (id: string | null) => void
+  pushNotification: (notification: AppNotification) => void
+  markNotificationRead: (id: string) => void
+  markAllNotificationsRead: () => void
+  clearNotifications: () => void
   setDraggedEmployee: (id: string | null) => void
   setActiveView: (view: ActiveView) => void
   setRealtimeMode: (mode: RealtimeMode) => void
@@ -150,6 +156,35 @@ const initialConnections: Connection[] = [
   { id: 'c7', from: 'admin', to: 'ops_lead', label: 'Manages', type: 'delegation' },
 ]
 
+const MAX_NOTIFICATIONS = 50
+
+function prependNotification(
+  list: AppNotification[],
+  notification: AppNotification
+): AppNotification[] {
+  return [notification, ...list].slice(0, MAX_NOTIFICATIONS)
+}
+
+const initialNotifications: AppNotification[] = [
+  {
+    id: 'n-seed-1',
+    type: 'system',
+    title: 'Welcome to Paperclip',
+    message: 'Your AI team is online. Notifications will appear here in real time.',
+    read: false,
+    timestamp: Date.now() - 1000 * 60 * 5,
+  },
+  {
+    id: 'n-seed-2',
+    type: 'task',
+    title: 'Task completed: SEO audit and optimization',
+    message: 'Blaze finished the task.',
+    employeeId: 'marketing_lead',
+    read: true,
+    timestamp: Date.now() - 1000 * 60 * 32,
+  },
+]
+
 const initialTasks: Task[] = [
   { id: 't1', title: 'Launch Q3 marketing campaign', assignee: 'cmo', status: 'in-progress', priority: 'high' },
   { id: 't2', title: 'Prepare monthly budget report', assignee: 'cfo', status: 'review', priority: 'medium' },
@@ -167,6 +202,7 @@ export const useStore = create<AppState>((set) => ({
   activeView: 'org',
   realtimeMode: 'connecting',
   heartbeats: {},
+  notifications: initialNotifications,
 
   setSelectedEmployee: (id) => set({ selectedEmployee: id }),
   setDraggedEmployee: (id) => set({ draggedEmployee: id }),
@@ -222,22 +258,107 @@ export const useStore = create<AppState>((set) => ({
       return { heartbeats: { ...state.heartbeats, [id]: timestamp } }
     }),
 
-  applyRealtimeEvent: (event) => {
-    switch (event.type) {
-      case 'agent_status':
-        useStore.getState().updateEmployeeStatus(event.agentId, event.status)
-        break
-      case 'token_usage':
-        useStore.getState().updateEmployeeTokens(event.agentId, event.tokensUsed)
-        break
-      case 'task_update':
-        useStore.getState().updateTaskStatus(event.taskId, event.status)
-        break
-      case 'heartbeat':
-        useStore.getState().recordHeartbeat(event.agentId, event.timestamp)
-        break
-    }
-  },
+  pushNotification: (notification) =>
+    set((state) => ({
+      notifications: prependNotification(state.notifications, notification),
+    })),
+
+  markNotificationRead: (id) =>
+    set((state) => ({
+      notifications: state.notifications.map((n) =>
+        n.id === id ? { ...n, read: true } : n
+      ),
+    })),
+
+  markAllNotificationsRead: () =>
+    set((state) => ({
+      notifications: state.notifications.map((n) =>
+        n.read ? n : { ...n, read: true }
+      ),
+    })),
+
+  clearNotifications: () => set({ notifications: [] }),
+
+  applyRealtimeEvent: (event) =>
+    set((state) => {
+      let notifications = state.notifications
+
+      switch (event.type) {
+        case 'agent_status': {
+          const emp = state.employees[event.agentId]
+          if (!emp || emp.status === event.status) return state
+          notifications = prependNotification(notifications, {
+            id: `n-status-${event.agentId}-${event.timestamp}`,
+            type: 'status',
+            employeeId: event.agentId,
+            title: `${emp.name} is now ${event.status}`,
+            message: `${emp.role} changed status to ${event.status}.`,
+            read: false,
+            timestamp: event.timestamp,
+          })
+          return {
+            ...state,
+            employees: {
+              ...state.employees,
+              [event.agentId]: { ...emp, status: event.status },
+            },
+            notifications,
+          }
+        }
+        case 'token_usage': {
+          const emp = state.employees[event.agentId]
+          if (!emp || emp.tokens_used === event.tokensUsed) return state
+          const crossedWarning =
+            emp.tokens_used <= emp.budget * 0.8 &&
+            event.tokensUsed > emp.budget * 0.8
+          if (crossedWarning) {
+            const pct = Math.round((event.tokensUsed / emp.budget) * 100)
+            notifications = prependNotification(notifications, {
+              id: `n-budget-${event.agentId}-${event.timestamp}`,
+              type: 'budget',
+              employeeId: event.agentId,
+              title: `${emp.name} crossed 80% of budget`,
+              message: `Token usage is at ${pct}% of the ${emp.budget.toLocaleString()} budget.`,
+              read: false,
+              timestamp: event.timestamp,
+            })
+          }
+          return {
+            ...state,
+            employees: {
+              ...state.employees,
+              [event.agentId]: { ...emp, tokens_used: event.tokensUsed },
+            },
+            notifications,
+          }
+        }
+        case 'task_update': {
+          const task = state.tasks.find((t) => t.id === event.taskId)
+          if (!task || task.status === event.status) return state
+          if (event.status === 'done') {
+            const emp = state.employees[task.assignee]
+            notifications = prependNotification(notifications, {
+              id: `n-task-${event.taskId}-${event.timestamp}`,
+              type: 'task',
+              employeeId: task.assignee,
+              title: `Task completed: ${task.title}`,
+              message: emp ? `${emp.name} finished the task.` : 'A task was marked done.',
+              read: false,
+              timestamp: event.timestamp,
+            })
+          }
+          return {
+            ...state,
+            tasks: state.tasks.map((t) =>
+              t.id === event.taskId ? { ...t, status: event.status } : t
+            ),
+            notifications,
+          }
+        }
+        case 'heartbeat':
+          return state
+      }
+    }),
 
   reassignEmployee: (employeeId, newManagerId) =>
     set((state) => {
@@ -319,3 +440,10 @@ export const useStore = create<AppState>((set) => ({
       return { employees, connections }
     }),
 }))
+
+// Dev-only: expose the store on window so CDP verification scripts can drive
+// state deterministically. Stripped from production builds (import.meta.env.DEV
+// is statically replaced and the block is tree-shaken).
+if (import.meta.env.DEV) {
+  ;(window as unknown as { __useStore: typeof useStore }).__useStore = useStore
+}

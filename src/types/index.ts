@@ -76,3 +76,16 @@ export type RealtimeEvent =
 export type RealtimeMode = 'connecting' | 'live' | 'simulated' | 'offline'
 
 export type ActiveView = 'org' | 'workflow' | 'tasks' | 'agent'
+
+export type NotificationType = 'status' | 'budget' | 'task' | 'system'
+
+export interface AppNotification {
+  id: string
+  type: NotificationType
+  title: string
+  message: string
+  /** Related agent id, when the notification is about an employee */
+  employeeId?: string
+  read: boolean
+  timestamp: number
+}

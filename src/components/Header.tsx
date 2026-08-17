@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
-import { Search, Bell, Settings, Zap, Wifi, WifiOff, Radio, Menu, Sun, Moon } from 'lucide-react'
+import { Search, Settings, Zap, Wifi, WifiOff, Radio, Menu, Sun, Moon } from 'lucide-react'
 import { useStore } from '../store/useStore'
 import { useTheme } from '../store/useTheme'
 import { paperclip } from '../api/paperclip'
+import { Notifications } from './Notifications'
 import type { RealtimeMode } from '../types'
 
 const realtimeConfig: Record<
@@ -163,10 +164,7 @@ export function Header({
           )}
         </button>
 
-        <button className="relative p-2 rounded-xl hover:bg-white/8 transition-colors cursor-pointer">
-          <Bell className="w-4.5 h-4.5 text-slate-400" />
-          <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-indigo-500 rounded-full" />
-        </button>
+        <Notifications />
 
         <button className="p-2 rounded-xl hover:bg-white/8 transition-colors hidden sm:block cursor-pointer">
           <Settings className="w-4.5 h-4.5 text-slate-400" />

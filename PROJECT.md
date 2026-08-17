@@ -72,6 +72,7 @@
 │   │   ├── FloatingBar.tsx            # 🔘 Floating action button (FAB) menu
 │   │   ├── Header.tsx                 # 📌 Top bar: search, connection status, notifications
 │   │   ├── Hero.tsx                   # 🚀 Landing page hero section
+│   │   ├── Notifications.tsx          # 🔔 Bell dropdown: notif list, unread badge, mark read/clear
 │   │   ├── OnboardingModal.tsx        # 🤖 Agent hiring wizard (3-step modal)
 │   │   ├── OrgChart.tsx               # 🏢 Main org chart view with DnD context
 │   │   ├── OrgNode.tsx                # 🎴 Individual agent card (draggable, with heartbeat)
@@ -190,6 +191,7 @@ Rencana awal ketika project ini dibuat:
 | `Sparkline.tsx` | ✅ Done | SVG sparkline with gradient fill, animated |
 | `AgentDetail.tsx` | ✅ Done | Full-page detail: activity timeline, token chart, task assignments, heartbeat schedule, budget settings |
 | `CostChart.tsx` | ✅ Done | Bar chart token usage per agent |
+| `Notifications.tsx` | ✅ Done | Bell dropdown: unread badge, list per tipe (status/budget/task/system), click-to-read, mark all read, clear all, close on outside click/Esc |
 
 ### State management:
 - `useStore.ts` — Zustand store dengan employees, connections, tasks
@@ -318,15 +320,19 @@ File: src/components/ConnectorConfig.tsx, src/api/paperclip.ts
 - ✅ **Paperclip routines API** — method baru di `paperclip.ts`: `getRoutines()` dan `runRoutine(routineId, payload)`; saat Run, payload steps dikirim best-effort ke server (`POST /routines/:id/run`), fallback otomatis ke simulasi lokal jika server offline
 - ✅ Verifikasi: `node scripts/workflow-check.mjs 9222` (22 checks: template load, branch badges, config panel, error policy stop, abort + skip downstream, persist & reset)
 
-#### 7. Notifications System
+#### 7. Notifications System ✅ DONE
 ```
-File: src/components/Notifications.tsx (NEW)
+File: src/components/Notifications.tsx (NEW), src/store/useStore.ts, src/components/Header.tsx, src/types/index.ts
 ```
-- Dropdown panel dari bell icon di header
-- Agent status change notifications
-- Budget warning notifications
-- Task completion notifications
-- Mark as read/unread
+- ✅ **Bell dropdown** — komponen `Notifications` menggantikan bell statis di header: panel glassmorphism, badge jumlah unread (cap 9+), tutup via klik di luar / Esc
+- ✅ **Agent status change** — event realtime `agent_status` → notifikasi "`<name>` is now `<status>`" (hanya saat status benar-benar berubah)
+- ✅ **Budget warning** — event `token_usage` → notifikasi saat token melewati **80% budget** (deteksi crossing, hanya sekali saat melewati)
+- ✅ **Task completion** — event `task_update` → notifikasi saat task masuk status `done` (dengan nama assignee)
+- ✅ **Mark as read/unread** — klik item menandai read (unread punya dot indigo + highlight), tombol "Mark all as read" (CheckCheck), tombol "Clear all" (Trash), empty state
+- ✅ **Tipe notifikasi** — `status` (indigo/Activity), `budget` (amber/AlertTriangle), `task` (emerald/CheckCircle), `system` (violet/Zap) + relative time ("2m ago")
+- ✅ **State di store** — `notifications` + aksi `pushNotification`, `markNotificationRead`, `markAllNotificationsRead`, `clearNotifications`; seed 2 notifikasi awal; cap 50 entry
+- ✅ **Dev hook** — store di-expose ke `window.__useStore` **hanya di dev build** (`import.meta.env.DEV`, di-tree-shake saat production) agar script verifikasi bisa memicu event deterministik
+- ✅ Verifikasi: `node scripts/notifications-check.mjs 9222` (13 checks: badge, seeded list, read/clear, 3 tipe notifikasi hasil realtime event, mark all read)
 
 ### 🟢 Prioritas Rendah (Low Priority)
 
@@ -519,6 +525,9 @@ node scripts/task-board-check.mjs 9222
 
 # Workflow pipeline (template load, branch badges, error policy, run log, save/reset)
 node scripts/workflow-check.mjs 9222
+
+# Notifications (badge, seeded list, read/clear, notifikasi dari realtime events)
+node scripts/notifications-check.mjs 9222
 ```
 
 ## Troubleshooting
