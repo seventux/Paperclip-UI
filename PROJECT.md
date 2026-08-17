@@ -180,7 +180,7 @@ Rencana awal ketika project ini dibuat:
 | `OrgChart.tsx` | ✅ Done | Hierarchical tree rendering, DnD context, drag overlay |
 | `OrgNode.tsx` | ✅ Done | Draggable card, heartbeat pulse, budget bar, sparkline, status indicator |
 | `EmployeePool.tsx` | ✅ Done | Agent list, detail panel with budget visualization |
-| `TasksView.tsx` | ✅ Done | Kanban board (Todo/In Progress/Review/Done) |
+| `TasksView.tsx` | ✅ Done | Kanban board (Todo/In Progress/Review/Done), drag & drop antar kolom + assign ke agent |
 | `ConnectorConfig.tsx` | ✅ Done | n8n-style pipeline builder, add/remove/toggle steps, config sidebar |
 | `WorkflowPanel.tsx` | ✅ Done | React Flow graph view with animated edges |
 | `Hero.tsx` | ✅ Done | Landing page with floating agent particles, CTA buttons |
@@ -193,7 +193,7 @@ Rencana awal ketika project ini dibuat:
 
 ### State management:
 - `useStore.ts` — Zustand store dengan employees, connections, tasks
-- Actions: `reassignEmployee`, `addEmployee`, `removeEmployee`, `setSelectedEmployee`, `setActiveView`
+- Actions: `reassignEmployee`, `addEmployee`, `removeEmployee`, `setSelectedEmployee`, `setActiveView`, `updateTaskStatus`, `updateTaskAssignee`
 - Realtime actions: `setRealtimeMode`, `updateEmployeeStatus`, `updateEmployeeTokens`, `updateTaskStatus`, `recordHeartbeat`, `applyRealtimeEvent`
 
 ### API:
@@ -296,13 +296,15 @@ File: src/components/AgentDetail.tsx (NEW)
 - ✅ View baru `'agent'` di `activeView`; tombol Back / Esc / keyboard 1-3 / sidebar kembali ke view lain
 - ✅ Verifikasi: `node scripts/agent-detail-check.mjs <port>`
 
-#### 5. Drag & Drop di Task Board
+#### 5. Drag & Drop di Task Board ✅ DONE
 ```
-File: src/components/TasksView.tsx
+File: src/components/TasksView.tsx, src/store/useStore.ts
 ```
-- Implement drag-and-drop antar kolom (Todo → In Progress → Review → Done)
-- Drag task ke agent untuk assign
-- Menggunakan @dnd-kit yang sudah ter-install
+- ✅ Drag-and-drop antar kolom (Todo → In Progress → Review → Done): setiap kolom adalah `useDroppable` (`column:<status>`), task card pakai `useDraggable`, `DragOverlay` menampilkan kartu saat di-drag
+- ✅ Drag task ke agent untuk assign: **agent dock** (chip semua agent) di atas board adalah `useDroppable` (`agent:<id>`); drop task pada chip mengubah assignee via aksi store baru `updateTaskAssignee(id, assignee)`
+- ✅ Drop ke kolom kosong didukung (placeholder "Drop tasks here" berubah jadi "Release to move here" saat hover)
+- ✅ Menggunakan @dnd-kit (core) yang sudah ter-install, pattern sama dengan OrgChart (`PointerSensor` distance 8, `DragOverlay`)
+- ✅ Verifikasi: `node scripts/task-board-check.mjs 9222` (simulasi drag via CDP: pindah kolom + assign ke agent)
 
 #### 6. Workflow Pipeline Improvements
 ```
@@ -509,6 +511,9 @@ node scripts/theme-check.mjs 9222
 
 # Agent detail page flow (open, sections, budget save, Esc, live activity)
 node scripts/agent-detail-check.mjs 9222
+
+# Task board drag & drop (drag antar kolom + drop ke agent untuk assign)
+node scripts/task-board-check.mjs 9222
 ```
 
 ## Troubleshooting

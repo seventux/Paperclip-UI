@@ -25,6 +25,7 @@ interface AppState {
   updateEmployeeTokens: (id: string, tokensUsed: number) => void
   updateEmployeeBudget: (id: string, budget: number) => void
   updateTaskStatus: (id: string, status: Task['status']) => void
+  updateTaskAssignee: (id: string, assignee: string) => void
   recordHeartbeat: (id: string, timestamp: number) => void
   applyRealtimeEvent: (event: RealtimeEvent) => void
   reassignEmployee: (employeeId: string, newManagerId: string) => void
@@ -194,6 +195,17 @@ export const useStore = create<AppState>((set) => ({
       if (!task || task.status === status) return state
       return {
         tasks: state.tasks.map((t) => (t.id === id ? { ...t, status } : t)),
+      }
+    }),
+
+  updateTaskAssignee: (id, assignee) =>
+    set((state) => {
+      const task = state.tasks.find((t) => t.id === id)
+      if (!task || task.assignee === assignee || !state.employees[assignee]) {
+        return state
+      }
+      return {
+        tasks: state.tasks.map((t) => (t.id === id ? { ...t, assignee } : t)),
       }
     }),
 
