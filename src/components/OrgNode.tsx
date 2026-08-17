@@ -1,6 +1,8 @@
+import { useMemo } from 'react'
 import { motion } from 'framer-motion'
 import { useDraggable } from '@dnd-kit/core'
 import { useStore } from '../store/useStore'
+import { Sparkline, generateSparkData } from './Sparkline'
 import type { OrgEmployee } from '../types'
 
 interface OrgNodeProps {
@@ -12,6 +14,11 @@ interface OrgNodeProps {
 export function OrgNode({ employee, isDropTarget, compact }: OrgNodeProps) {
   const { setSelectedEmployee, selectedEmployee } = useStore()
   const isSelected = selectedEmployee === employee.id
+
+  const sparkData = useMemo(
+    () => generateSparkData(employee.tokens_used / 100),
+    [employee.tokens_used]
+  )
 
   const { attributes, listeners, setNodeRef, transform, isDragging } =
     useDraggable({
@@ -86,7 +93,6 @@ export function OrgNode({ employee, isDropTarget, compact }: OrgNodeProps) {
           >
             {employee.avatar}
           </div>
-          {/* Heartbeat glow ring on avatar */}
           {employee.status === 'active' && (
             <div
               className="absolute inset-0 rounded-xl animate-pulse opacity-20"
@@ -107,28 +113,33 @@ export function OrgNode({ employee, isDropTarget, compact }: OrgNodeProps) {
         </div>
       </div>
 
-      {/* Budget bar */}
+      {/* Budget bar + sparkline */}
       {!compact && (
-        <div className="mt-3">
-          <div className="flex justify-between items-center mb-1">
-            <span className="text-[10px] text-slate-500">Token Usage</span>
-            <span className="text-[10px] text-slate-400">{budgetPercent}%</span>
+        <div className="mt-3 flex items-end gap-3">
+          <div className="flex-1">
+            <div className="flex justify-between items-center mb-1">
+              <span className="text-[10px] text-slate-500">Token Usage</span>
+              <span className="text-[10px] text-slate-400">{budgetPercent}%</span>
+            </div>
+            <div className="h-1.5 rounded-full bg-white/5 overflow-hidden">
+              <motion.div
+                initial={{ width: 0 }}
+                animate={{ width: `${budgetPercent}%` }}
+                transition={{ duration: 1, delay: 0.2, ease: 'easeOut' }}
+                className="h-full rounded-full"
+                style={{
+                  background:
+                    budgetPercent > 80
+                      ? 'linear-gradient(90deg, #f43f5e, #ef4444)'
+                      : budgetPercent > 50
+                        ? 'linear-gradient(90deg, #f59e0b, #f97316)'
+                        : `linear-gradient(90deg, ${employee.color}, ${employee.color}99)`,
+                }}
+              />
+            </div>
           </div>
-          <div className="h-1.5 rounded-full bg-white/5 overflow-hidden">
-            <motion.div
-              initial={{ width: 0 }}
-              animate={{ width: `${budgetPercent}%` }}
-              transition={{ duration: 1, delay: 0.2, ease: 'easeOut' }}
-              className="h-full rounded-full"
-              style={{
-                background:
-                  budgetPercent > 80
-                    ? 'linear-gradient(90deg, #f43f5e, #ef4444)'
-                    : budgetPercent > 50
-                      ? 'linear-gradient(90deg, #f59e0b, #f97316)'
-                      : `linear-gradient(90deg, ${employee.color}, ${employee.color}99)`,
-              }}
-            />
+          <div className="shrink-0 opacity-60">
+            <Sparkline data={sparkData} color={employee.color} width={48} height={18} />
           </div>
         </div>
       )}
