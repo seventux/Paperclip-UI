@@ -181,7 +181,7 @@ Rencana awal ketika project ini dibuat:
 | `OrgNode.tsx` | ✅ Done | Draggable card, heartbeat pulse, budget bar, sparkline, status indicator |
 | `EmployeePool.tsx` | ✅ Done | Agent list, detail panel with budget visualization |
 | `TasksView.tsx` | ✅ Done | Kanban board (Todo/In Progress/Review/Done), drag & drop antar kolom + assign ke agent |
-| `ConnectorConfig.tsx` | ✅ Done | n8n-style pipeline builder, add/remove/toggle steps, config sidebar |
+| `ConnectorConfig.tsx` | ✅ Done | n8n-style pipeline builder: templates (save/load + 3 presets), conditional branching (Yes/No), error handling policies, execution log viewer, run simulation + Paperclip routines sync |
 | `WorkflowPanel.tsx` | ✅ Done | React Flow graph view with animated edges |
 | `Hero.tsx` | ✅ Done | Landing page with floating agent particles, CTA buttons |
 | `FloatingBar.tsx` | ✅ Done | FAB with expandable quick actions |
@@ -306,15 +306,17 @@ File: src/components/TasksView.tsx, src/store/useStore.ts
 - ✅ Menggunakan @dnd-kit (core) yang sudah ter-install, pattern sama dengan OrgChart (`PointerSensor` distance 8, `DragOverlay`)
 - ✅ Verifikasi: `node scripts/task-board-check.mjs 9222` (simulasi drag via CDP: pindah kolom + assign ke agent)
 
-#### 6. Workflow Pipeline Improvements
+#### 6. Workflow Pipeline Improvements ✅ DONE
 ```
-File: src/components/ConnectorConfig.tsx
+File: src/components/ConnectorConfig.tsx, src/api/paperclip.ts
 ```
-- Save/load workflow templates
-- Conditional branching visual
-- Error handling nodes
-- Execution log viewer
-- Connect workflow ke actual Paperclip routines API
+- ✅ **Save/load workflow templates** — 3 preset templates (Heartbeat Monitor, Budget Alert, Task Assignment) via dropdown, tombol **Save** ke localStorage (`paperclip-workflow`, auto-load saat mount), tombol **Reset** kembali ke default
+- ✅ **Conditional branching visual** — step `condition` punya outcome `Yes`/`No` (bisa di-set di config panel); connector line + badge berwarna (hijau Yes / amber No) menandai branch tiap step; step bisa di-assign ke `Main flow` / `Yes branch` / `No branch`; saat run, branch yang tidak diambil di-skip dan dicatat di log
+- ✅ **Error handling nodes** — tiap step punya policy `stop` / `continue` / `retry`; toggle **"Simulate failure"** per step untuk demo; saat error: `stop` = abort workflow (sisa step di-skip), `continue` = lanjut, `retry` = coba sekali lagi
+- ✅ **Execution log viewer** — panel tab `Execution Log` di sidebar kanan: entry per step (running/success/error/skipped) + pesan workflow, timestamp, auto-scroll, tombol Clear, badge jumlah entry
+- ✅ **Run simulation** — tombol Run/Stop menjalankan pipeline step-by-step dengan delay realistis, status live di tiap card (spinner/check/cross/skip); Stop membatalkan run
+- ✅ **Paperclip routines API** — method baru di `paperclip.ts`: `getRoutines()` dan `runRoutine(routineId, payload)`; saat Run, payload steps dikirim best-effort ke server (`POST /routines/:id/run`), fallback otomatis ke simulasi lokal jika server offline
+- ✅ Verifikasi: `node scripts/workflow-check.mjs 9222` (22 checks: template load, branch badges, config panel, error policy stop, abort + skip downstream, persist & reset)
 
 #### 7. Notifications System
 ```
@@ -514,6 +516,9 @@ node scripts/agent-detail-check.mjs 9222
 
 # Task board drag & drop (drag antar kolom + drop ke agent untuk assign)
 node scripts/task-board-check.mjs 9222
+
+# Workflow pipeline (template load, branch badges, error policy, run log, save/reset)
+node scripts/workflow-check.mjs 9222
 ```
 
 ## Troubleshooting

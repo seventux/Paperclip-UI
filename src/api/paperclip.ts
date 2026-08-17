@@ -32,11 +32,20 @@ interface PaperclipTask {
   priority: string
 }
 
+interface PaperclipRoutine {
+  id: string
+  name: string
+  description?: string
+  steps?: unknown[]
+}
+
 interface ApiResponse {
   companies?: PaperclipCompany[]
   agents?: PaperclipAgent[]
   tasks?: PaperclipTask[]
   activity?: unknown[]
+  routines?: PaperclipRoutine[]
+  run?: unknown
 }
 
 class PaperclipConnector {
@@ -125,6 +134,28 @@ class PaperclipConnector {
       `/companies/${companyId}/agents/${agentId}/activity`
     )
     return (res as ApiResponse)?.activity || []
+  }
+
+  /**
+   * Fetch workflow routines available on the Paperclip server
+   */
+  async getRoutines(): Promise<PaperclipRoutine[]> {
+    const res = await this.request('/routines')
+    return (res as ApiResponse)?.routines || []
+  }
+
+  /**
+   * Trigger a workflow routine on the Paperclip server.
+   * Returns the server response, or null when offline/unreachable.
+   */
+  async runRoutine(
+    routineId: string,
+    payload?: Record<string, unknown>
+  ): Promise<unknown> {
+    return this.request(`/routines/${routineId}/run`, {
+      method: 'POST',
+      body: JSON.stringify(payload ?? {}),
+    })
   }
 
   /**
