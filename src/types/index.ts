@@ -74,3 +74,5 @@ export type RealtimeEvent =
   | TaskUpdateEvent
 
 export type RealtimeMode = 'connecting' | 'live' | 'simulated' | 'offline'
+
+export type ActiveView = 'org' | 'workflow' | 'tasks' | 'agent'

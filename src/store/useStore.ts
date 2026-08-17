@@ -5,6 +5,7 @@ import type {
   Task,
   RealtimeEvent,
   RealtimeMode,
+  ActiveView,
 } from '../types'
 
 interface AppState {
@@ -13,15 +14,16 @@ interface AppState {
   tasks: Task[]
   selectedEmployee: string | null
   draggedEmployee: string | null
-  activeView: 'org' | 'workflow' | 'tasks'
+  activeView: ActiveView
   realtimeMode: RealtimeMode
   heartbeats: Record<string, number>
   setSelectedEmployee: (id: string | null) => void
   setDraggedEmployee: (id: string | null) => void
-  setActiveView: (view: 'org' | 'workflow' | 'tasks') => void
+  setActiveView: (view: ActiveView) => void
   setRealtimeMode: (mode: RealtimeMode) => void
   updateEmployeeStatus: (id: string, status: OrgEmployee['status']) => void
   updateEmployeeTokens: (id: string, tokensUsed: number) => void
+  updateEmployeeBudget: (id: string, budget: number) => void
   updateTaskStatus: (id: string, status: Task['status']) => void
   recordHeartbeat: (id: string, timestamp: number) => void
   applyRealtimeEvent: (event: RealtimeEvent) => void
@@ -193,6 +195,13 @@ export const useStore = create<AppState>((set) => ({
       return {
         tasks: state.tasks.map((t) => (t.id === id ? { ...t, status } : t)),
       }
+    }),
+
+  updateEmployeeBudget: (id, budget) =>
+    set((state) => {
+      const emp = state.employees[id]
+      if (!emp || emp.budget === budget || budget < 0) return state
+      return { employees: { ...state.employees, [id]: { ...emp, budget } } }
     }),
 
   recordHeartbeat: (id, timestamp) =>

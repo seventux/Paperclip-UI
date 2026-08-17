@@ -8,6 +8,7 @@ import { TasksView } from './components/TasksView'
 import { EmployeePool } from './components/EmployeePool'
 import { Hero } from './components/Hero'
 import { ConnectorConfig } from './components/ConnectorConfig'
+import { AgentDetail } from './components/AgentDetail'
 import { FloatingBar } from './components/FloatingBar'
 import { OnboardingModal } from './components/OnboardingModal'
 import { CostChart } from './components/CostChart'
@@ -48,6 +49,8 @@ function App() {
         setShowSearch(false)
         setShowOnboarding(false)
         setMobileNavOpen(false)
+        // Escape from agent detail page back to org chart
+        if (activeView === 'agent') setActiveView('org')
       }
       // 1/2/3 → Switch views (when not in input)
       if (
@@ -79,7 +82,7 @@ function App() {
         }
       }
     },
-    [showSearch, showOnboarding, setActiveView]
+    [showSearch, showOnboarding, activeView, setActiveView]
   )
 
   useEffect(() => {
@@ -199,6 +202,7 @@ function App() {
           )}
           {activeView === 'workflow' && <ConnectorConfig />}
           {activeView === 'tasks' && <TasksView />}
+          {activeView === 'agent' && <AgentDetail />}
         </AnimatePresence>
       </div>
 

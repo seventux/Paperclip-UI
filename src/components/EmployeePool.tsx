@@ -3,7 +3,7 @@ import { useStore } from '../store/useStore'
 import { User, Coins, Clock, ChevronRight, X } from 'lucide-react'
 
 export function EmployeePool() {
-  const { employees, selectedEmployee, setSelectedEmployee } = useStore()
+  const { employees, selectedEmployee, setSelectedEmployee, setActiveView } = useStore()
   const agentList = Object.values(employees)
   const selected = selectedEmployee ? employees[selectedEmployee] : null
 
@@ -111,7 +111,10 @@ export function EmployeePool() {
             <motion.button
               key={emp.id}
               whileHover={{ x: 2 }}
-              onClick={() => setSelectedEmployee(emp.id)}
+              onClick={() => {
+                setSelectedEmployee(emp.id)
+                setActiveView('agent')
+              }}
               className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-left transition-all cursor-pointer ${
                 selectedEmployee === emp.id
                   ? 'bg-indigo-500/15 border border-indigo-500/20'

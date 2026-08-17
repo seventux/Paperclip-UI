@@ -65,6 +65,7 @@
 │   │   ├── paperclip.ts              # 🔌 Connector ke Paperclip server API + WebSocket client
 │   │   └── realtimeSimulator.ts      # 📡 Simulated realtime feed (standalone/demo mode)
 │   ├── components/
+│   │   ├── AgentDetail.tsx            # 🤖 Full-page agent detail (activity, chart, tasks, budget, heartbeat)
 │   │   ├── ConnectorConfig.tsx        # ⚡ n8n-style workflow pipeline builder
 │   │   ├── CostChart.tsx              # 📊 Bar chart token usage per agent
 │   │   ├── EmployeePool.tsx           # 📋 Right sidebar: agent list + detail panel
@@ -187,6 +188,7 @@ Rencana awal ketika project ini dibuat:
 | `OnboardingModal.tsx` | ✅ Done | 3-step wizard (Select Role → Configure → Review) |
 | `SearchModal.tsx` | ✅ Done | ⌘K modal, search agents/tasks, keyboard navigation |
 | `Sparkline.tsx` | ✅ Done | SVG sparkline with gradient fill, animated |
+| `AgentDetail.tsx` | ✅ Done | Full-page detail: activity timeline, token chart, task assignments, heartbeat schedule, budget settings |
 | `CostChart.tsx` | ✅ Done | Bar chart token usage per agent |
 
 ### State management:
@@ -199,6 +201,11 @@ Rencana awal ketika project ini dibuat:
 - `paperclip.ts` — `PaperclipSocket` class: `connect(companyId?)`, `on(listener)`, `onModeChange(listener)`, `disconnect()`, dengan auto-reconnect + ping
 - `realtimeSimulator.ts` — `RealtimeSimulator` class: feed simulasi (token/heartbeat/status/task) saat server offline
 - `useRealtime.ts` — hook yang menghubungkan socket/simulator ke store, panggil sekali di `App.tsx`
+
+### Views:
+- `activeView` sekarang: `'org' | 'workflow' | 'tasks' | 'agent'`
+- `AgentDetail.tsx` — halaman penuh ketika `selectedEmployee` di-set & `activeView === 'agent'`; klik card di OrgChart/EmployeePool membukanya
+- `updateEmployeeBudget(id, budget)` — aksi store untuk edit budget
 
 ### Theme:
 - `useTheme.ts` — Zustand store: `theme`, `setTheme`, `toggleTheme`; persist ke localStorage, fallback ke `prefers-color-scheme`
@@ -276,16 +283,18 @@ File: src/store/useTheme.ts (NEW), src/index.css, src/components/Header.tsx + be
 
 ### 🟡 Prioritas Sedang (Medium Priority)
 
-#### 4. Agent Detail Page
+#### 4. Agent Detail Page ✅ DONE
 ```
 File: src/components/AgentDetail.tsx (NEW)
 ```
-- Full page view ketika klik agent
-- Activity log / timeline
-- Token usage history (chart)
-- Task assignments
-- Heartbeat schedule config
-- Budget settings
+- ✅ Full page view: klik agent card (OrgChart) atau item di EmployeePool membuka detail
+- ✅ Activity log / timeline — entry awal dari data agent + entry `just now` baru otomatis di-prepend setiap realtime heartbeat
+- ✅ Token usage history — chart area SVG responsif (Sparkline dengan prop `responsive`)
+- ✅ Task assignments — daftar task milik agent dengan status & priority
+- ✅ Heartbeat schedule config — interval, last heartbeat, wake-on-schedule toggle (display)
+- ✅ Budget settings — input + tombol Save (aksi store `updateEmployeeBudget`)
+- ✅ View baru `'agent'` di `activeView`; tombol Back / Esc / keyboard 1-3 / sidebar kembali ke view lain
+- ✅ Verifikasi: `node scripts/agent-detail-check.mjs <port>`
 
 #### 5. Drag & Drop di Task Board
 ```
@@ -497,6 +506,9 @@ node scripts/desktop-check.mjs 9222
 
 # Theme toggle check (dark/light, persistence, system preference)
 node scripts/theme-check.mjs 9222
+
+# Agent detail page flow (open, sections, budget save, Esc, live activity)
+node scripts/agent-detail-check.mjs 9222
 ```
 
 ## Troubleshooting

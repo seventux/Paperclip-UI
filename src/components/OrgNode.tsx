@@ -12,7 +12,7 @@ interface OrgNodeProps {
 }
 
 export function OrgNode({ employee, isDropTarget, compact }: OrgNodeProps) {
-  const { setSelectedEmployee, selectedEmployee, heartbeats } = useStore()
+  const { setSelectedEmployee, setActiveView, selectedEmployee, heartbeats } = useStore()
   const isSelected = selectedEmployee === employee.id
   const lastBeat = heartbeats[employee.id] ?? 0
 
@@ -50,7 +50,10 @@ export function OrgNode({ employee, isDropTarget, compact }: OrgNodeProps) {
       transition={{ duration: 0.3 }}
       {...listeners}
       {...attributes}
-      onClick={() => setSelectedEmployee(employee.id)}
+      onClick={() => {
+        setSelectedEmployee(employee.id)
+        setActiveView('agent')
+      }}
       className={`
         relative cursor-grab active:cursor-grabbing select-none
         ${compact ? 'p-3' : 'p-4'}

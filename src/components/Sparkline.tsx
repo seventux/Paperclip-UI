@@ -7,6 +7,8 @@ interface SparklineProps {
   width?: number
   height?: number
   animated?: boolean
+  /** Render with viewBox so the chart scales to fit its container */
+  responsive?: boolean
 }
 
 export function Sparkline({
@@ -15,6 +17,7 @@ export function Sparkline({
   width = 80,
   height = 24,
   animated = true,
+  responsive = false,
 }: SparklineProps) {
   const points = useMemo(() => {
     if (data.length < 2) return ''
@@ -55,7 +58,12 @@ export function Sparkline({
   if (data.length < 2) return null
 
   return (
-    <svg width={width} height={height} className="overflow-visible">
+    <svg
+      width={responsive ? undefined : width}
+      height={responsive ? undefined : height}
+      viewBox={responsive ? `0 0 ${width} ${height}` : undefined}
+      className={responsive ? 'w-full h-auto overflow-visible' : 'overflow-visible'}
+    >
       {/* Gradient fill */}
       <defs>
         <linearGradient id={`spark-grad-${color.replace('#', '')}`} x1="0" y1="0" x2="0" y2="1">
