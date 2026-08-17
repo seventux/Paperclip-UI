@@ -17,6 +17,7 @@ A beautiful, glassmorphism-styled frontend for [Paperclip](https://github.com/se
 - **🔗 Paperclip Connector** — Connects to your Paperclip server API
 - **📡 Real-time Updates** — WebSocket feed for live agent status, token usage & heartbeats (simulated feed in demo mode)
 - **📱 Fully Responsive** — Hamburger nav drawer, swipeable task columns & 2-axis org chart scroll on mobile
+- **🌓 Dark/Light Theme** — Glassmorphism in both themes, toggle in header, remembers your preference
 - **🪟 Glassmorphism UI** — iOS-inspired frosted glass design
 
 ## 🚀 Quick Start

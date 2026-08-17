@@ -117,7 +117,7 @@ export function FloatingBar({
         {isOpen ? (
           <X className="w-5 h-5 text-white" />
         ) : (
-          <Plus className="w-5 h-5 text-white" />
+          <Plus className="w-5 h-5 text-[#fff]" />
         )}
       </motion.button>
     </div>

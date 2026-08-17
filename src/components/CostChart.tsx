@@ -35,7 +35,7 @@ export function CostChart() {
               >
                 {/* Tooltip */}
                 <div className="absolute -top-8 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
-                  <div className="bg-black/80 backdrop-blur-sm px-2 py-1 rounded text-[9px] text-white whitespace-nowrap">
+                  <div className="bg-black/80 backdrop-blur-sm px-2 py-1 rounded text-[9px] text-[#fff] whitespace-nowrap">
                     {(emp.tokens_used / 1000).toFixed(0)}K
                   </div>
                 </div>

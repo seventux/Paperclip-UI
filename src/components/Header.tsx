@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
-import { Search, Bell, Settings, Zap, Wifi, WifiOff, Radio, Menu } from 'lucide-react'
+import { Search, Bell, Settings, Zap, Wifi, WifiOff, Radio, Menu, Sun, Moon } from 'lucide-react'
 import { useStore } from '../store/useStore'
+import { useTheme } from '../store/useTheme'
 import { paperclip } from '../api/paperclip'
 import type { RealtimeMode } from '../types'
 
@@ -23,6 +24,7 @@ export function Header({
   onSearchClick?: () => void
 } = {}) {
   const { employees, realtimeMode } = useStore()
+  const { theme, toggleTheme } = useTheme()
   const activeCount = Object.values(employees).filter(
     (e) => e.status === 'active'
   ).length
@@ -50,7 +52,7 @@ export function Header({
           <Menu className="w-5 h-5 text-slate-300" />
         </button>
         <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-lg shadow-indigo-500/25 shrink-0">
-          <Zap className="w-5 h-5 text-white" />
+          <Zap className="w-5 h-5 text-[#fff]" />
         </div>
         <div>
           <h1 className="text-base font-semibold tracking-tight text-white">
@@ -147,16 +149,30 @@ export function Header({
           </span>
         </div>
 
-        <button className="relative p-2 rounded-xl hover:bg-white/8 transition-colors">
+        {/* Theme toggle */}
+        <button
+          onClick={toggleTheme}
+          className="p-2 rounded-xl hover:bg-white/8 transition-colors cursor-pointer"
+          aria-label="Toggle theme"
+          title={theme === 'dark' ? 'Switch to light theme' : 'Switch to dark theme'}
+        >
+          {theme === 'dark' ? (
+            <Sun className="w-4.5 h-4.5 text-slate-300" />
+          ) : (
+            <Moon className="w-4.5 h-4.5 text-slate-400" />
+          )}
+        </button>
+
+        <button className="relative p-2 rounded-xl hover:bg-white/8 transition-colors cursor-pointer">
           <Bell className="w-4.5 h-4.5 text-slate-400" />
           <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-indigo-500 rounded-full" />
         </button>
 
-        <button className="p-2 rounded-xl hover:bg-white/8 transition-colors">
+        <button className="p-2 rounded-xl hover:bg-white/8 transition-colors hidden sm:block cursor-pointer">
           <Settings className="w-4.5 h-4.5 text-slate-400" />
         </button>
 
-        <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-sm font-bold text-white cursor-pointer">
+        <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-sm font-bold text-[#fff] cursor-pointer">
           U
         </div>
       </div>

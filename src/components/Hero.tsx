@@ -74,7 +74,7 @@ export function Hero({ onGetStarted }: { onGetStarted: () => void }) {
 
         {/* Title */}
         <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold text-white mb-4 leading-tight">
-          <span className="bg-gradient-to-r from-white via-indigo-200 to-purple-200 bg-clip-text text-transparent">
+          <span className="hero-gradient">
             Run your company
           </span>
           <br />
@@ -95,7 +95,7 @@ export function Hero({ onGetStarted }: { onGetStarted: () => void }) {
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
             onClick={onGetStarted}
-            className="flex items-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-semibold text-sm shadow-lg shadow-indigo-500/25 hover:shadow-indigo-500/40 transition-shadow cursor-pointer"
+            className="flex items-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 text-[#fff] font-semibold text-sm shadow-lg shadow-indigo-500/25 hover:shadow-indigo-500/40 transition-shadow cursor-pointer"
           >
             <Zap className="w-4 h-4" />
             Launch Dashboard

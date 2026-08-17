@@ -78,13 +78,13 @@ export function OnboardingModal({ isOpen, onClose }: OnboardingModalProps) {
             animate={{ scale: 1, opacity: 1, y: 0 }}
             exit={{ scale: 0.9, opacity: 0, y: 20 }}
             onClick={(e) => e.stopPropagation()}
-            className="w-[min(520px,calc(100vw-2rem))] max-h-[85vh] overflow-hidden rounded-3xl backdrop-blur-2xl bg-[rgba(15,15,30,0.95)] border border-white/10 shadow-2xl"
+            className="w-[min(520px,calc(100vw-2rem))] max-h-[85vh] overflow-hidden rounded-3xl backdrop-blur-2xl bg-(--modal-bg) border border-white/10 shadow-2xl"
           >
             {/* Header */}
             <div className="flex items-center justify-between p-6 pb-4">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center">
-                  <Bot className="w-5 h-5 text-white" />
+                  <Bot className="w-5 h-5 text-[#fff]" />
                 </div>
                 <div>
                   <h2 className="text-lg font-bold text-white">Hire New Agent</h2>
@@ -108,9 +108,9 @@ export function OnboardingModal({ isOpen, onClose }: OnboardingModalProps) {
                   <div
                     className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${
                       i < currentStep
-                        ? 'bg-emerald-500 text-white'
+                        ? 'bg-emerald-500 text-[#fff]'
                         : i === currentStep
-                          ? 'bg-indigo-500 text-white'
+                          ? 'bg-indigo-500 text-[#fff]'
                           : 'bg-white/5 text-slate-500'
                     }`}
                   >
@@ -283,7 +283,7 @@ export function OnboardingModal({ isOpen, onClose }: OnboardingModalProps) {
                 disabled={!canProceed()}
                 className={`flex items-center gap-1 px-5 py-2 rounded-xl text-sm font-medium transition-all cursor-pointer ${
                   canProceed()
-                    ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-lg shadow-indigo-500/25'
+                    ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-[#fff] shadow-lg shadow-indigo-500/25'
                     : 'bg-white/5 text-slate-500 cursor-not-allowed'
                 }`}
               >

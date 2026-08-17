@@ -75,27 +75,122 @@ body::after {
   50% { transform: scale(1.15); opacity: 0.7; }
 }
 
+/* ------------------------------------------------------------------ */
+/* Theme system                                                        */
+/*                                                                     */
+/* Dark is the default. Adding the `light` class to <html> overrides    */
+/* Tailwind theme color variables (--color-*) so utilities like         */
+/* text-white / bg-white\/5 / border-white\/8 resolve to light-theme     */
+/* values without touching component markup.                            */
+/* ------------------------------------------------------------------ */
+
+:root {
+  --modal-bg: rgba(15, 15, 30, 0.95);
+  --glass-bg: rgba(255, 255, 255, 0.05);
+  --glass-bg-hover: rgba(255, 255, 255, 0.08);
+  --glass-bg-strong: rgba(255, 255, 255, 0.07);
+  --glass-border: rgba(255, 255, 255, 0.08);
+  --glass-border-hover: rgba(255, 255, 255, 0.15);
+  --glass-border-strong: rgba(255, 255, 255, 0.12);
+}
+
+.light {
+  --color-white: #1e293b;
+  --color-slate-300: #475569;
+  --color-slate-400: #475569;
+  --color-slate-500: #64748b;
+  --color-slate-600: #94a3b8;
+  --color-indigo-300: #4f46e5;
+  --color-indigo-400: #6366f1;
+  --color-emerald-400: #059669;
+  --color-amber-400: #d97706;
+  --color-red-400: #dc2626;
+
+  --modal-bg: rgba(255, 255, 255, 0.97);
+  --glass-bg: rgba(255, 255, 255, 0.55);
+  --glass-bg-hover: rgba(255, 255, 255, 0.7);
+  --glass-bg-strong: rgba(255, 255, 255, 0.65);
+  --glass-border: rgba(15, 23, 42, 0.08);
+  --glass-border-hover: rgba(15, 23, 42, 0.16);
+  --glass-border-strong: rgba(15, 23, 42, 0.12);
+}
+
+html.light body {
+  background: linear-gradient(135deg, #f1f5f9 0%, #e0e7ff 30%, #ede9fe 60%, #f1f5f9 100%);
+  color: #1e293b;
+}
+
+html.light body::before,
+html.light body::after {
+  opacity: 0.16;
+}
+
+html.light ::-webkit-scrollbar-thumb {
+  background: rgba(15, 23, 42, 0.2);
+}
+
+html.light ::-webkit-scrollbar-thumb:hover {
+  background: rgba(15, 23, 42, 0.32);
+}
+
+html.light select option {
+  background: #ffffff;
+  color: #1e293b;
+}
+
+html.light .glass-inset {
+  background: rgba(15, 23, 42, 0.05);
+  border-color: rgba(15, 23, 42, 0.08);
+}
+
+/* Hero headline gradient: white-on-dark, indigo-on-light */
+.hero-gradient {
+  background: linear-gradient(90deg, #ffffff 0%, #c7d2fe 50%, #e9d5ff 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+html.light .hero-gradient {
+  background: linear-gradient(90deg, #1e293b 0%, #6366f1 50%, #a855f7 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* React Flow panels in light mode */
+html.light .react-flow__minimap,
+html.light .react-flow__controls {
+  background: rgba(255, 255, 255, 0.75) !important;
+  border-color: rgba(15, 23, 42, 0.1) !important;
+}
+
+html.light .react-flow__controls button {
+  color: #1e293b !important;
+  border-color: rgba(15, 23, 42, 0.1) !important;
+}
+
 /* Glass panel base */
 .glass {
-  background: rgba(255, 255, 255, 0.05);
+  background: var(--glass-bg);
   backdrop-filter: blur(24px) saturate(180%);
   -webkit-backdrop-filter: blur(24px) saturate(180%);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border: 1px solid var(--glass-border);
   border-radius: 20px;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .glass:hover {
-  background: rgba(255, 255, 255, 0.08);
-  border-color: rgba(255, 255, 255, 0.15);
+  background: var(--glass-bg-hover);
+  border-color: var(--glass-border-hover);
   box-shadow: 0 8px 32px rgba(99, 102, 241, 0.1);
 }
 
 .glass-strong {
-  background: rgba(255, 255, 255, 0.07);
+  background: var(--glass-bg-strong);
   backdrop-filter: blur(40px) saturate(200%);
   -webkit-backdrop-filter: blur(40px) saturate(200%);
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  border: 1px solid var(--glass-border-strong);
   border-radius: 24px;
 }
 

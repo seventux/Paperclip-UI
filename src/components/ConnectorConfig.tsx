@@ -265,7 +265,7 @@ export function ConnectorConfig() {
             initial={{ x: 20, opacity: 0 }}
             animate={{ x: 0, opacity: 1 }}
             exit={{ x: 20, opacity: 0 }}
-            className="w-[280px] max-w-[85vw] p-4 border-l border-white/5 overflow-auto max-lg:absolute max-lg:inset-y-0 max-lg:right-0 max-lg:z-30 max-lg:shadow-2xl max-lg:bg-[rgba(12,12,25,0.97)]"
+            className="w-[280px] max-w-[85vw] p-4 border-l border-white/5 overflow-auto max-lg:absolute max-lg:inset-y-0 max-lg:right-0 max-lg:z-30 max-lg:shadow-2xl max-lg:bg-(--modal-bg)"
           >
             {(() => {
               const step = steps.find((s) => s.id === selectedStep)

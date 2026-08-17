@@ -200,6 +200,11 @@ Rencana awal ketika project ini dibuat:
 - `realtimeSimulator.ts` — `RealtimeSimulator` class: feed simulasi (token/heartbeat/status/task) saat server offline
 - `useRealtime.ts` — hook yang menghubungkan socket/simulator ke store, panggil sekali di `App.tsx`
 
+### Theme:
+- `useTheme.ts` — Zustand store: `theme`, `setTheme`, `toggleTheme`; persist ke localStorage, fallback ke `prefers-color-scheme`
+- Kelas `.light` di `<html>` meng-override `--color-*` Tailwind vars + `--modal-bg`/`--glass-*`
+- Toggle button Sun/Moon di header
+
 ### Responsive:
 - Mobile (< `lg`): sidebar jadi drawer off-canvas, task board swipeable, org chart scroll 2 arah, right panel hidden
 - Desktop (`lg`+): layout asli tidak berubah (sidebar 220px, right panel 280px, grid 4 kolom)
@@ -251,15 +256,23 @@ File: src/App.tsx, src/components/Header.tsx, src/components/Sidebar.tsx, src/co
 - ✅ Sidebar Add Agent button sekarang berfungsi
 - ✅ Verifikasi: `node scripts/mobile-check.mjs <port>` (viewport 390×844) & `node scripts/desktop-check.mjs <port>` (1440×900)
 
-#### 3. Theme Toggle (Dark/Light)
+#### 3. Theme Toggle (Dark/Light) ✅ DONE
 ```
-File: src/index.css, src/App.tsx, semua components
+File: src/store/useTheme.ts (NEW), src/index.css, src/components/Header.tsx + beberapa komponen
 ```
-- Tambah theme context/provider
-- Light theme dengan glassmorphism tetap (frosted glass on white)
-- Toggle button di header
-- Save preference ke localStorage
-- Detect system preference (`prefers-color-scheme`)
+- ✅ `useTheme.ts` — Zustand store: `theme`, `setTheme`, `toggleTheme`
+- ✅ Save preference ke localStorage (`paperclip-theme`)
+- ✅ Detect system preference (`prefers-color-scheme`) sebagai fallback
+- ✅ Toggle button (Sun/Moon) di header
+- ✅ Light theme dengan glassmorphism tetap (frosted glass on white)
+
+**Arsitektur theming (penting untuk lanjutan):**
+- Kelas `.light` di-`toggle` pada `<html>` (di `useTheme.ts`)
+- `.light` meng-override variabel warna Tailwind (`--color-white`, `--color-slate-*`, `--color-indigo-*`, `--color-emerald-*`, dst.) — jadi utility seperti `text-white`, `bg-white/5`, `border-white/8` otomatis berubah tema tanpa mengubah markup komponen
+- Variabel CSS custom: `--modal-bg`, `--glass-bg`, `--glass-bg-strong`, `--glass-border` (didefinisikan di `:root` dan di-override di `.light`); `.glass`/`.glass-strong` memakai variabel ini
+- `text-white` di atas background gradien berwarna (tombol CTA, icon logo, dll.) memakai `text-[#fff]` agar tetap putih di kedua tema
+- Hero gradient pakai class `.hero-gradient` (putih di dark, indigo di light)
+- Verifikasi: `node scripts/theme-check.mjs <port>`
 
 ### 🟡 Prioritas Sedang (Medium Priority)
 
@@ -481,6 +494,9 @@ node scripts/mobile-check.mjs 9222
 
 # Desktop layout sanity check
 node scripts/desktop-check.mjs 9222
+
+# Theme toggle check (dark/light, persistence, system preference)
+node scripts/theme-check.mjs 9222
 ```
 
 ## Troubleshooting
