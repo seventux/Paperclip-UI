@@ -12,8 +12,9 @@ interface OrgNodeProps {
 }
 
 export function OrgNode({ employee, isDropTarget, compact }: OrgNodeProps) {
-  const { setSelectedEmployee, selectedEmployee } = useStore()
+  const { setSelectedEmployee, selectedEmployee, heartbeats } = useStore()
   const isSelected = selectedEmployee === employee.id
+  const lastBeat = heartbeats[employee.id] ?? 0
 
   const sparkData = useMemo(
     () => generateSparkData(employee.tokens_used / 100),
@@ -105,7 +106,14 @@ export function OrgNode({ employee, isDropTarget, compact }: OrgNodeProps) {
             <h3 className="text-sm font-semibold text-white truncate">
               {employee.name}
             </h3>
-            <div className={`w-2 h-2 rounded-full ${statusColor} shrink-0`} />
+            {/* Status dot pulses on every realtime heartbeat */}
+            <motion.div
+              key={lastBeat || 'static'}
+              initial={lastBeat ? { scale: 1.8, opacity: 0.3 } : false}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ duration: 0.4 }}
+              className={`w-2 h-2 rounded-full ${statusColor} shrink-0`}
+            />
           </div>
           <p className="text-[11px] text-slate-400 truncate">
             {employee.title}

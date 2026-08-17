@@ -73,7 +73,7 @@ export function Hero({ onGetStarted }: { onGetStarted: () => void }) {
         </motion.div>
 
         {/* Title */}
-        <h1 className="text-5xl md:text-6xl font-bold text-white mb-4 leading-tight">
+        <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold text-white mb-4 leading-tight">
           <span className="bg-gradient-to-r from-white via-indigo-200 to-purple-200 bg-clip-text text-transparent">
             Run your company
           </span>
@@ -90,7 +90,7 @@ export function Hero({ onGetStarted }: { onGetStarted: () => void }) {
         </p>
 
         {/* CTA Buttons */}
-        <div className="flex items-center justify-center gap-4 mb-12">
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-12">
           <motion.button
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
@@ -112,7 +112,7 @@ export function Hero({ onGetStarted }: { onGetStarted: () => void }) {
         </div>
 
         {/* Feature pills */}
-        <div className="flex items-center justify-center gap-6">
+        <div className="flex items-center justify-center gap-6 flex-wrap">
           {features.map((feat, i) => {
             const Icon = feat.icon
             return (

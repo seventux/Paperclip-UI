@@ -16,7 +16,13 @@ const navItems = [
   { id: 'tasks' as const, icon: CheckSquare, label: 'Tasks' },
 ]
 
-export function Sidebar() {
+export function Sidebar({
+  onNavigate,
+  onAddAgent,
+}: {
+  onNavigate?: () => void
+  onAddAgent?: () => void
+} = {}) {
   const { activeView, setActiveView, employees, tasks } = useStore()
   const agentList = Object.values(employees)
   const totalTokens = agentList.reduce((sum, e) => sum + e.tokens_used, 0)
@@ -42,7 +48,10 @@ export function Sidebar() {
             return (
               <button
                 key={item.id}
-                onClick={() => setActiveView(item.id)}
+                onClick={() => {
+                  setActiveView(item.id)
+                  onNavigate?.()
+                }}
                 className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all ${
                   isActive
                     ? 'bg-indigo-500/15 text-indigo-300 border border-indigo-500/20'
@@ -101,7 +110,10 @@ export function Sidebar() {
       </div>
 
       {/* Add Agent Button */}
-      <button className="glass flex items-center justify-center gap-2 px-4 py-3 text-sm font-medium text-indigo-300 hover:text-indigo-200 cursor-pointer">
+      <button
+        onClick={onAddAgent}
+        className="glass flex items-center justify-center gap-2 px-4 py-3 text-sm font-medium text-indigo-300 hover:text-indigo-200 cursor-pointer"
+      >
         <Plus className="w-4 h-4" />
         Add Agent
       </button>

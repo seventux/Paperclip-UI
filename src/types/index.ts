@@ -37,3 +37,40 @@ export interface Task {
   status: 'todo' | 'in-progress' | 'review' | 'done'
   priority: 'low' | 'medium' | 'high'
 }
+
+export type EmployeeStatus = OrgEmployee['status']
+
+export interface AgentStatusEvent {
+  type: 'agent_status'
+  agentId: string
+  status: EmployeeStatus
+  timestamp: number
+}
+
+export interface TokenUsageEvent {
+  type: 'token_usage'
+  agentId: string
+  tokensUsed: number
+  timestamp: number
+}
+
+export interface HeartbeatEvent {
+  type: 'heartbeat'
+  agentId: string
+  timestamp: number
+}
+
+export interface TaskUpdateEvent {
+  type: 'task_update'
+  taskId: string
+  status: Task['status']
+  timestamp: number
+}
+
+export type RealtimeEvent =
+  | AgentStatusEvent
+  | TokenUsageEvent
+  | HeartbeatEvent
+  | TaskUpdateEvent
+
+export type RealtimeMode = 'connecting' | 'live' | 'simulated' | 'offline'

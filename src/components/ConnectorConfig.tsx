@@ -12,6 +12,7 @@ import {
   Play,
   Pause,
   RotateCcw,
+  X,
 } from 'lucide-react'
 
 interface ConnectorStep {
@@ -92,10 +93,10 @@ export function ConnectorConfig() {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.5, delay: 0.2 }}
-      className="flex-1 flex overflow-hidden"
+      className="flex-1 flex overflow-hidden relative"
     >
       {/* Pipeline builder */}
-      <div className="flex-1 p-6 overflow-auto">
+      <div className="flex-1 p-4 md:p-6 overflow-auto">
         <div className="flex items-center justify-between mb-6">
           <div>
             <h2 className="text-xl font-bold text-white">Workflow Pipeline</h2>
@@ -149,9 +150,11 @@ export function ConnectorConfig() {
                   layout
                   initial={{ scale: 0.95, opacity: 0 }}
                   animate={{ scale: 1, opacity: step.enabled ? 1 : 0.5 }}
-                  onClick={() => setSelectedStep(step.id)}
+                  onClick={() =>
+                    setSelectedStep(step.id === selectedStep ? null : step.id)
+                  }
                   className={`
-                    relative w-[320px] p-4 rounded-2xl backdrop-blur-xl border cursor-pointer transition-all
+                    relative w-[min(320px,calc(100vw-2rem))] p-4 rounded-2xl backdrop-blur-xl border cursor-pointer transition-all
                     ${
                       isActive
                         ? 'border-indigo-500/30 bg-indigo-500/5'
@@ -262,7 +265,7 @@ export function ConnectorConfig() {
             initial={{ x: 20, opacity: 0 }}
             animate={{ x: 0, opacity: 1 }}
             exit={{ x: 20, opacity: 0 }}
-            className="w-[280px] p-4 border-l border-white/5 overflow-auto"
+            className="w-[280px] max-w-[85vw] p-4 border-l border-white/5 overflow-auto max-lg:absolute max-lg:inset-y-0 max-lg:right-0 max-lg:z-30 max-lg:shadow-2xl max-lg:bg-[rgba(12,12,25,0.97)]"
           >
             {(() => {
               const step = steps.find((s) => s.id === selectedStep)
@@ -277,6 +280,13 @@ export function ConnectorConfig() {
                     <span className="text-[10px] uppercase tracking-widest text-slate-500 font-semibold">
                       Step Config
                     </span>
+                    <button
+                      onClick={() => setSelectedStep(null)}
+                      className="ml-auto p-1.5 rounded-lg hover:bg-white/10 transition-colors cursor-pointer lg:hidden"
+                      aria-label="Close config"
+                    >
+                      <X className="w-3.5 h-3.5 text-slate-400" />
+                    </button>
                   </div>
 
                   <div className="flex items-center gap-3 mb-4 p-3 rounded-xl bg-white/3 border border-white/5">

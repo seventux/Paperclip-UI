@@ -106,7 +106,7 @@ export function OrgChart() {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.5, delay: 0.2 }}
-        className="flex-1 overflow-auto p-6"
+        className="flex-1 overflow-auto p-4 md:p-6"
       >
         {/* Title */}
         <div className="mb-6">
@@ -116,8 +116,10 @@ export function OrgChart() {
           </p>
         </div>
 
-        {/* Tree */}
-        <div className="flex justify-center pt-4">{renderTree('ceo')}</div>
+        {/* Tree: centers when there is room, scrolls both axes on narrow screens */}
+        <div className="min-h-full flex">
+          <div className="m-auto min-w-max pt-4">{renderTree('ceo')}</div>
+        </div>
       </motion.div>
 
       <DragOverlay>

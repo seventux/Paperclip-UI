@@ -116,7 +116,7 @@ export function SearchModal({
             animate={{ scale: 1, opacity: 1, y: 0 }}
             exit={{ scale: 0.95, opacity: 0, y: -10 }}
             onClick={(e) => e.stopPropagation()}
-            className="w-[560px] max-h-[480px] overflow-hidden rounded-2xl backdrop-blur-2xl bg-[rgba(15,15,30,0.95)] border border-white/10 shadow-2xl"
+            className="w-[min(560px,calc(100vw-2rem))] max-h-[min(480px,80vh)] overflow-hidden rounded-2xl backdrop-blur-2xl bg-[rgba(15,15,30,0.95)] border border-white/10 shadow-2xl"
           >
             {/* Search input */}
             <div className="flex items-center gap-3 px-5 py-4 border-b border-white/5">

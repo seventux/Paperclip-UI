@@ -78,7 +78,7 @@ export function OnboardingModal({ isOpen, onClose }: OnboardingModalProps) {
             animate={{ scale: 1, opacity: 1, y: 0 }}
             exit={{ scale: 0.9, opacity: 0, y: 20 }}
             onClick={(e) => e.stopPropagation()}
-            className="w-[520px] max-h-[80vh] overflow-hidden rounded-3xl backdrop-blur-2xl bg-[rgba(15,15,30,0.95)] border border-white/10 shadow-2xl"
+            className="w-[min(520px,calc(100vw-2rem))] max-h-[85vh] overflow-hidden rounded-3xl backdrop-blur-2xl bg-[rgba(15,15,30,0.95)] border border-white/10 shadow-2xl"
           >
             {/* Header */}
             <div className="flex items-center justify-between p-6 pb-4">
@@ -117,7 +117,7 @@ export function OnboardingModal({ isOpen, onClose }: OnboardingModalProps) {
                     {i < currentStep ? <Check className="w-3 h-3" /> : i + 1}
                   </div>
                   <span
-                    className={`text-xs ${
+                    className={`text-xs hidden sm:inline ${
                       i <= currentStep ? 'text-white' : 'text-slate-500'
                     }`}
                   >
@@ -143,7 +143,7 @@ export function OnboardingModal({ isOpen, onClose }: OnboardingModalProps) {
                     <p className="text-sm text-slate-400 mb-4">
                       Choose a role for your new agent:
                     </p>
-                    <div className="grid grid-cols-4 gap-2">
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                       {agentPresets.map((preset, i) => (
                         <motion.button
                           key={i}

@@ -15,6 +15,8 @@ A beautiful, glassmorphism-styled frontend for [Paperclip](https://github.com/se
 - **💓 Heartbeat Animations** — Real-time visual status for active agents
 - **💰 Cost Dashboard** — Token usage tracking per agent
 - **🔗 Paperclip Connector** — Connects to your Paperclip server API
+- **📡 Real-time Updates** — WebSocket feed for live agent status, token usage & heartbeats (simulated feed in demo mode)
+- **📱 Fully Responsive** — Hamburger nav drawer, swipeable task columns & 2-axis org chart scroll on mobile
 - **🪟 Glassmorphism UI** — iOS-inspired frosted glass design
 
 ## 🚀 Quick Start

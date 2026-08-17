@@ -62,7 +62,8 @@
 │   └── icons.svg
 ├── src/
 │   ├── api/
-│   │   └── paperclip.ts              # 🔌 Connector ke Paperclip server API
+│   │   ├── paperclip.ts              # 🔌 Connector ke Paperclip server API + WebSocket client
+│   │   └── realtimeSimulator.ts      # 📡 Simulated realtime feed (standalone/demo mode)
 │   ├── components/
 │   │   ├── ConnectorConfig.tsx        # ⚡ n8n-style workflow pipeline builder
 │   │   ├── CostChart.tsx              # 📊 Bar chart token usage per agent
@@ -77,9 +78,10 @@
 │   │   ├── Sidebar.tsx                # 📂 Left navigation panel
 │   │   ├── Sparkline.tsx              # 📈 Mini SVG sparkline chart component
 │   │   ├── TasksView.tsx              # ✅ Kanban task board
-│   │   └── WorkflowPanel.tsx          # 🔗 React Flow graph view (alternate)
+│   │   └── WorkflowPanel.tsx          # 🔗 React Flow graph view (alternate)│   ├── hooks/
+│   │   └── useRealtime.ts            # ⚡ Wires WebSocket/simulator events into the store
 │   ├── store/
-│   │   └── useStore.ts                # 🗄️ Zustand store (employees, connections, tasks)
+│   │   └── useStore.ts               # 🗄️ Zustand store (employees, connections, tasks)
 │   ├── types/
 │   │   └── index.ts                   # 📝 TypeScript interfaces
 │   ├── App.tsx                        # 🎯 Main app: routing, keyboard shortcuts, modals
@@ -190,9 +192,17 @@ Rencana awal ketika project ini dibuat:
 ### State management:
 - `useStore.ts` — Zustand store dengan employees, connections, tasks
 - Actions: `reassignEmployee`, `addEmployee`, `removeEmployee`, `setSelectedEmployee`, `setActiveView`
+- Realtime actions: `setRealtimeMode`, `updateEmployeeStatus`, `updateEmployeeTokens`, `updateTaskStatus`, `recordHeartbeat`, `applyRealtimeEvent`
 
 ### API:
 - `paperclip.ts` — Connector class dengan methods: `connect()`, `getCompanies()`, `getAgents()`, `reassignAgent()`, `getTasks()`, `getAgentActivity()`
+- `paperclip.ts` — `PaperclipSocket` class: `connect(companyId?)`, `on(listener)`, `onModeChange(listener)`, `disconnect()`, dengan auto-reconnect + ping
+- `realtimeSimulator.ts` — `RealtimeSimulator` class: feed simulasi (token/heartbeat/status/task) saat server offline
+- `useRealtime.ts` — hook yang menghubungkan socket/simulator ke store, panggil sekali di `App.tsx`
+
+### Responsive:
+- Mobile (< `lg`): sidebar jadi drawer off-canvas, task board swipeable, org chart scroll 2 arah, right panel hidden
+- Desktop (`lg`+): layout asli tidak berubah (sidebar 220px, right panel 280px, grid 4 kolom)
 
 ### Design system (CSS):
 - `.glass` — Base glassmorphism panel
@@ -212,25 +222,34 @@ Rencana awal ketika project ini dibuat:
 
 ### 🔴 Prioritas Tinggi (High Priority)
 
-#### 1. Real-time WebSocket Connection
+#### 1. Real-time WebSocket Connection ✅ DONE
 ```
-File: src/api/paperclip.ts, src/store/useStore.ts
+File: src/api/paperclip.ts, src/hooks/useRealtime.ts, src/api/realtimeSimulator.ts, src/store/useStore.ts
 ```
-- Tambah WebSocket connection ke Paperclip server untuk real-time updates
-- Update agent status (active/idle/offline) secara live
-- Update token usage counters secara real-time
-- Tampilkan heartbeat state changes
+- ✅ `PaperclipSocket` class: connect/reconnect (exponential backoff), heartbeat ping, typed event emitter
+- ✅ Update agent status (active/idle/offline) secara live via `agent_status` events
+- ✅ Update token usage counters secara real-time via `token_usage` events
+- ✅ Heartbeat state changes: status dot di `OrgNode` berdenyut setiap heartbeat
+- ✅ Task updates live via `task_update` events
+- ✅ Fallback simulasi: saat server tidak reachable, `RealtimeSimulator` menghasilkan feed yang sama
+- ✅ Indikator di header: `Live` / `Demo Feed` / `Connecting` / `Offline`
+- ✅ Smoke test: `npx tsx scripts/realtime-smoke.mts`
 - Referensi: Paperclip docs ada di `doc/` di repo asli
 
-#### 2. Mobile Responsive Layout
+#### 2. Mobile Responsive Layout ✅ DONE
 ```
-File: Semua components
+File: src/App.tsx, src/components/Header.tsx, src/components/Sidebar.tsx, src/components/OrgChart.tsx, src/components/TasksView.tsx, src/components/ConnectorConfig.tsx, src/components/OnboardingModal.tsx, src/components/SearchModal.tsx, src/components/Hero.tsx
 ```
-- Buat responsive layout untuk mobile/tablet
-- Sidebar jadi hamburger menu di mobile
-- Org chart jadi vertical scroll di mobile
-- Task board jadi swipeable columns
-- FAB tetap visible di mobile
+- ✅ Sidebar jadi hamburger menu → off-canvas drawer (spring animation) di layar < `lg`
+- ✅ Header responsif: hamburger + search icon di mobile, search input & status chips tersembunyi di layar kecil
+- ✅ Org chart: scroll 2 arah di mobile (fix `justify-center` yang meng-clip sisi kiri)
+- ✅ Task board: kolom jadi swipeable (horizontal scroll) di mobile, grid 4 kolom di desktop
+- ✅ FAB tetap visible di mobile
+- ✅ Right panel (EmployeePool/CostChart) tersembunyi di mobile, muncul dari `lg`
+- ✅ Modals (Onboarding/Search) pakai `min()` agar tidak overflow; step labels disembunyikan di mobile
+- ✅ Workflow config sidebar jadi overlay (dengan tombol close) di mobile
+- ✅ Sidebar Add Agent button sekarang berfungsi
+- ✅ Verifikasi: `node scripts/mobile-check.mjs <port>` (viewport 390×844) & `node scripts/desktop-check.mjs <port>` (1440×900)
 
 #### 3. Theme Toggle (Dark/Light)
 ```
@@ -403,7 +422,26 @@ Types: `feat`, `fix`, `refactor`, `docs`, `style`, `test`, `chore`
 ```bash
 # URL Paperclip API server (default: localhost:3100)
 VITE_PAPERCLIP_API_URL=http://localhost:3100/api
+
+# URL WebSocket server (optional). Jika tidak di-set, diturunkan otomatis
+# dari VITE_PAPERCLIP_API_URL: http(s) → ws(s), trailing /api → /ws
+VITE_PAPERCLIP_WS_URL=ws://localhost:3100/ws
 ```
+
+### WebSocket Protocol
+Server → Client (JSON):
+| `type` | Fields | Fungsi |
+|--------|--------|--------|
+| `agent_status` | `agentId`, `status` (`active`/`idle`/`offline`) | Update status agent live |
+| `token_usage` | `agentId`, `tokensUsed` (absolute total) | Update token usage counter |
+| `heartbeat` | `agentId`, `timestamp` | Heartbeat pulse (dot berdenyut di OrgNode) |
+| `task_update` | `taskId`, `status` (`todo`/`in-progress`/`review`/`done`) | Update status task |
+
+Client → Server (JSON):
+| `type` | Fields | Fungsi |
+|--------|--------|--------|
+| `subscribe` | `companyId` | Minta stream events untuk company tertentu |
+| `ping` | — | Keep-alive heartbeat (tiap 30 detik) |
 
 ### API Endpoints yang Digunakan
 | Method | Endpoint | Fungsi |
@@ -428,6 +466,22 @@ CEO (Atlas) → CMO (Nova), CFO (Ledger), Admin (Aria)
 ```
 
 ---
+
+## Scripts Verifikasi
+
+```bash
+# Realtime pipeline smoke test (store + simulator)
+npx tsx scripts/realtime-smoke.mts
+
+# Mobile layout check via headless Chrome (jalankan dengan vite dev server aktif)
+# 1. Start Chrome headless dengan remote debugging:
+#    google-chrome --headless=new --window-size=390,844 --remote-debugging-port=9222 about:blank
+# 2. Jalankan check:
+node scripts/mobile-check.mjs 9222
+
+# Desktop layout sanity check
+node scripts/desktop-check.mjs 9222
+```
 
 ## Troubleshooting
 
@@ -479,6 +533,9 @@ Ketika melanjutkan project ini, perhatikan hal-hal berikut:
 - `src/App.tsx` — Jika ada view/routing baru
 - `src/components/*.tsx` — Untuk UI changes
 - `src/index.css` — Untuk style/design changes
+- `src/api/paperclip.ts` — WebSocket client & API connector
+- `src/hooks/useRealtime.ts` — Logika koneksi realtime (live vs simulasi)
+- `src/api/realtimeSimulator.ts` — Feed simulasi untuk demo/standalone
 - `vite.config.ts` — Untuk build configuration
 
 ---

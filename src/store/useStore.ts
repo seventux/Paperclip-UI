@@ -1,5 +1,11 @@
 import { create } from 'zustand'
-import type { OrgEmployee, Connection, Task } from '../types'
+import type {
+  OrgEmployee,
+  Connection,
+  Task,
+  RealtimeEvent,
+  RealtimeMode,
+} from '../types'
 
 interface AppState {
   employees: Record<string, OrgEmployee>
@@ -8,9 +14,17 @@ interface AppState {
   selectedEmployee: string | null
   draggedEmployee: string | null
   activeView: 'org' | 'workflow' | 'tasks'
+  realtimeMode: RealtimeMode
+  heartbeats: Record<string, number>
   setSelectedEmployee: (id: string | null) => void
   setDraggedEmployee: (id: string | null) => void
   setActiveView: (view: 'org' | 'workflow' | 'tasks') => void
+  setRealtimeMode: (mode: RealtimeMode) => void
+  updateEmployeeStatus: (id: string, status: OrgEmployee['status']) => void
+  updateEmployeeTokens: (id: string, tokensUsed: number) => void
+  updateTaskStatus: (id: string, status: Task['status']) => void
+  recordHeartbeat: (id: string, timestamp: number) => void
+  applyRealtimeEvent: (event: RealtimeEvent) => void
   reassignEmployee: (employeeId: string, newManagerId: string) => void
   addEmployee: (employee: OrgEmployee) => void
   removeEmployee: (id: string) => void
@@ -148,10 +162,61 @@ export const useStore = create<AppState>((set) => ({
   selectedEmployee: null,
   draggedEmployee: null,
   activeView: 'org',
+  realtimeMode: 'connecting',
+  heartbeats: {},
 
   setSelectedEmployee: (id) => set({ selectedEmployee: id }),
   setDraggedEmployee: (id) => set({ draggedEmployee: id }),
   setActiveView: (view) => set({ activeView: view }),
+  setRealtimeMode: (mode) => set({ realtimeMode: mode }),
+
+  updateEmployeeStatus: (id, status) =>
+    set((state) => {
+      const emp = state.employees[id]
+      if (!emp || emp.status === status) return state
+      return { employees: { ...state.employees, [id]: { ...emp, status } } }
+    }),
+
+  updateEmployeeTokens: (id, tokensUsed) =>
+    set((state) => {
+      const emp = state.employees[id]
+      if (!emp || emp.tokens_used === tokensUsed) return state
+      return {
+        employees: { ...state.employees, [id]: { ...emp, tokens_used: tokensUsed } },
+      }
+    }),
+
+  updateTaskStatus: (id, status) =>
+    set((state) => {
+      const task = state.tasks.find((t) => t.id === id)
+      if (!task || task.status === status) return state
+      return {
+        tasks: state.tasks.map((t) => (t.id === id ? { ...t, status } : t)),
+      }
+    }),
+
+  recordHeartbeat: (id, timestamp) =>
+    set((state) => {
+      if ((state.heartbeats[id] ?? 0) >= timestamp) return state
+      return { heartbeats: { ...state.heartbeats, [id]: timestamp } }
+    }),
+
+  applyRealtimeEvent: (event) => {
+    switch (event.type) {
+      case 'agent_status':
+        useStore.getState().updateEmployeeStatus(event.agentId, event.status)
+        break
+      case 'token_usage':
+        useStore.getState().updateEmployeeTokens(event.agentId, event.tokensUsed)
+        break
+      case 'task_update':
+        useStore.getState().updateTaskStatus(event.taskId, event.status)
+        break
+      case 'heartbeat':
+        useStore.getState().recordHeartbeat(event.agentId, event.timestamp)
+        break
+    }
+  },
 
   reassignEmployee: (employeeId, newManagerId) =>
     set((state) => {

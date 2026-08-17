@@ -30,7 +30,7 @@ export function TasksView() {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.5, delay: 0.2 }}
-      className="flex-1 overflow-auto p-6"
+      className="flex-1 overflow-auto p-4 md:p-6"
     >
       <div className="mb-6">
         <h2 className="text-xl font-bold text-white">Task Board</h2>
@@ -39,12 +39,13 @@ export function TasksView() {
         </p>
       </div>
 
-      <div className="grid grid-cols-4 gap-4 h-[calc(100%-80px)]">
+      {/* Swipeable columns on mobile, fixed 4-column grid on desktop */}
+      <div className="flex gap-4 overflow-x-auto pb-2 md:grid md:grid-cols-4 md:overflow-visible md:pb-0 h-[calc(100%-80px)]">
         {Object.entries(grouped).map(([status, items]) => {
           const config = statusConfig[status as keyof typeof statusConfig]
           const Icon = config.icon
           return (
-            <div key={status} className="flex flex-col gap-3">
+            <div key={status} className="flex flex-col gap-3 min-w-[240px] md:min-w-0">
               {/* Column header */}
               <div className="glass-strong px-4 py-3 flex items-center gap-2">
                 <Icon className="w-4 h-4" style={{ color: config.color }} />
