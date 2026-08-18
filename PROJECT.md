@@ -69,6 +69,7 @@
 │   │   ├── AgentDetail.tsx            # 🤖 Full-page agent detail (activity, chart, tasks, budget, heartbeat)
 │   │   ├── ConnectorConfig.tsx        # ⚡ n8n-style workflow pipeline builder
 │   │   ├── CostChart.tsx              # 📊 Bar chart token usage per agent
+│   │   ├── CostDashboard.tsx          # 💰 Cost analytics: time-series, per-agent breakdown, forecast, CSV
 │   │   ├── EmployeePool.tsx           # 📋 Right sidebar: agent list + detail panel
 │   │   ├── FloatingBar.tsx            # 🔘 Floating action button (FAB) menu
 │   │   ├── Header.tsx                 # 📌 Top bar: search, connection status, notifications
@@ -193,6 +194,7 @@ Rencana awal ketika project ini dibuat:
 | `AgentDetail.tsx` | ✅ Done | Full-page detail: activity timeline, token chart, task assignments, heartbeat schedule, budget settings |
 | `AgentChat.tsx` | ✅ Done | Chat drawer: thread list per agent, quick chat (simulated replies), tool-call tracing, clear thread |
 | `CostChart.tsx` | ✅ Done | Bar chart token usage per agent |
+| `CostDashboard.tsx` | ✅ Done | Cost analytics: summary stats, time-series chart (daily/weekly/monthly), per-agent breakdown, budget forecast, CSV export |
 | `Notifications.tsx` | ✅ Done | Bell dropdown: unread badge, list per tipe (status/budget/task/system), click-to-read, mark all read, clear all, close on outside click/Esc |
 
 ### State management:
@@ -207,7 +209,8 @@ Rencana awal ketika project ini dibuat:
 - `useRealtime.ts` — hook yang menghubungkan socket/simulator ke store, panggil sekali di `App.tsx`
 
 ### Views:
-- `activeView` sekarang: `'org' | 'workflow' | 'tasks' | 'agent'`
+- `activeView` sekarang: `'org' | 'workflow' | 'tasks' | 'agent' | 'cost'`
+- `CostDashboard.tsx` — halaman penuh cost analytics; akses via sidebar **Cost**, FAB → **Cost Reports**, atau keyboard `4`
 - `AgentDetail.tsx` — halaman penuh ketika `selectedEmployee` di-set & `activeView === 'agent'`; klik card di OrgChart/EmployeePool membukanya
 - `updateEmployeeBudget(id, budget)` — aksi store untuk edit budget
 
@@ -352,15 +355,18 @@ File: src/components/AgentChat.tsx (NEW), src/store/useStore.ts, src/types/index
 - ✅ **Fix regression realtime** — case `heartbeat` di `applyRealtimeEvent` tidak lagi memanggil `recordHeartbeat` sejak refactor notifications; dipulihkan (status dot OrgNode + activity timeline live kembali bekerja)
 - ✅ Verifikasi: `node scripts/chat-check.mjs 9222` (21 checks)
 
-#### 9. Cost Analytics Dashboard
+#### 9. Cost Analytics Dashboard ✅ DONE
 ```
-File: src/components/CostDashboard.tsx (NEW)
+File: src/components/CostDashboard.tsx (NEW), src/App.tsx, src/components/Sidebar.tsx, src/components/FloatingBar.tsx, src/types/index.ts
 ```
-- Full page cost analytics
-- Time-series charts (daily/weekly/monthly)
-- Per-agent cost breakdown
-- Budget forecasting
-- Export to CSV
+- ✅ **View baru `'cost'`** — sidebar nav item **Cost** (icon BarChart3), keyboard `4`, dan FAB → **Cost Reports**; tipe baru `CostPeriod` (`daily`/`weekly`/`monthly`) di `src/types/index.ts`
+- ✅ **Summary stats** — 4 kartu: Total Spend (USD), Tokens Used (+ % budget terpakai), Avg Daily Burn, Projected 30d Spend; rate demo `$3 / 1M tokens` (konstanta `COST_PER_1K`)
+- ✅ **Time-series chart** — SVG area + line chart (Framer Motion animasi path) dari series kumulatif semua agent; toggle period Daily (30 pt) / Weekly (12 pt) / Monthly (12 pt); gridlines, tooltip hover per titik (nilai K), label sumbu (X pt ago → Today)
+- ✅ **Synthetic history deterministik** — `mulberry32` PRNG + seed dari agent id + force titik terakhir ke total token aktual, jadi kurva stabil antar render dan berakhir tepat di nilai asli
+- ✅ **Per-agent breakdown** — tabel tiap agent: avatar, token pakai + cost, progress bar budget (merah >80%, amber >50%, warna agent di bawahnya), sparkline 8 titik terakhir
+- ✅ **Budget forecast** — per agent: burn rate (rata-rata 7 hari terakhir), proyeksi sisa hari, tanggal estimasi habis budget (format `Mon d`), badge AlertTriangle untuk ≤7 hari, label status (stable / budget exhausted)
+- ✅ **CSV export** — tombol Export CSV mengunduh `paperclip-cost-report.csv` (agent, role, tokens, cost USD, budget, usage %, burn/day, projected days left)
+- ✅ Verifikasi: `node scripts/cost-check.mjs 9222` (8 checks: open, stats, chart, breakdown & forecast rows, period switching, CSV download)
 
 #### 10. Company Settings Page
 ```
@@ -539,6 +545,9 @@ node scripts/notifications-check.mjs 9222
 
 # Agent chat (FAB → Quick Chat, thread per agent, kirim pesan, tool-call trace, clear, integrasi Agent Detail)
 node scripts/chat-check.mjs 9222
+
+# Cost analytics (open via keyboard 4, summary stats, chart, period switching, breakdown, forecast, CSV export)
+node scripts/cost-check.mjs 9222
 ```
 
 ## Troubleshooting

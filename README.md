@@ -15,7 +15,7 @@ A beautiful, glassmorphism-styled frontend for [Paperclip](https://github.com/se
 - **💬 Agent Chat** — Quick chat drawer with per-agent threads & tool-call tracing
 - **🔍 Agent Detail Page** — Full-page profile with activity timeline, token usage chart, tasks & budget settings
 - **💓 Heartbeat Animations** — Real-time visual status for active agents
-- **💰 Cost Dashboard** — Token usage tracking per agent
+- **💰 Cost Dashboard** — Full cost analytics: time-series charts (daily/weekly/monthly), per-agent breakdown, budget forecasting & CSV export
 - **🔗 Paperclip Connector** — Connects to your Paperclip server API
 - **📡 Real-time Updates** — WebSocket feed for live agent status, token usage & heartbeats (simulated feed in demo mode)
 - **📱 Fully Responsive** — Hamburger nav drawer, swipeable task columns & 2-axis org chart scroll on mobile
@@ -49,6 +49,7 @@ src/
 │   ├── AgentChat.tsx         # Chat drawer with per-agent threads & tool tracing
 │   ├── ConnectorConfig.tsx   # n8n-style workflow pipeline builder
 │   ├── CostChart.tsx         # Token usage bar chart
+│   ├── CostDashboard.tsx     # Cost analytics dashboard (charts, forecast, CSV)
 │   ├── EmployeePool.tsx      # Right sidebar agent list & details
 │   ├── FloatingBar.tsx       # Floating action button (FAB)
 │   ├── Header.tsx            # Top navigation bar

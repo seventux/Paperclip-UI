@@ -14,6 +14,7 @@ import { OnboardingModal } from './components/OnboardingModal'
 import { CostChart } from './components/CostChart'
 import { SearchModal } from './components/SearchModal'
 import { AgentChat } from './components/AgentChat'
+import { CostDashboard } from './components/CostDashboard'
 import { useStore } from './store/useStore'
 import { paperclip } from './api/paperclip'
 import { useRealtime } from './hooks/useRealtime'
@@ -53,7 +54,7 @@ function App() {
         // Escape from agent detail page back to org chart
         if (activeView === 'agent') setActiveView('org')
       }
-      // 1/2/3 → Switch views (when not in input)
+      // 1/2/3/4 → Switch views (when not in input)
       if (
         !showSearch &&
         !showOnboarding &&
@@ -71,6 +72,10 @@ function App() {
         if (e.key === '3') {
           setShowHero(false)
           setActiveView('tasks')
+        }
+        if (e.key === '4') {
+          setShowHero(false)
+          setActiveView('cost')
         }
         // N → New agent
         if (e.key === 'n' || e.key === 'N') {
@@ -166,6 +171,10 @@ function App() {
           onAddAgent={() => setShowOnboarding(true)}
           onShowOrg={handleShowOrg}
           onShowWorkflow={handleShowWorkflow}
+          onShowCost={() => {
+            setShowHero(false)
+            setActiveView('cost')
+          }}
           onQuickChat={() => openChat()}
         />
         {mobileDrawer}
@@ -206,6 +215,7 @@ function App() {
           {activeView === 'workflow' && <ConnectorConfig />}
           {activeView === 'tasks' && <TasksView />}
           {activeView === 'agent' && <AgentDetail />}
+          {activeView === 'cost' && <CostDashboard />}
         </AnimatePresence>
       </div>
 
@@ -213,6 +223,10 @@ function App() {
         onAddAgent={() => setShowOnboarding(true)}
         onShowOrg={handleShowOrg}
         onShowWorkflow={handleShowWorkflow}
+        onShowCost={() => {
+          setShowHero(false)
+          setActiveView('cost')
+        }}
         onQuickChat={() => openChat()}
       />
 

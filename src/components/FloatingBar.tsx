@@ -20,11 +20,13 @@ export function FloatingBar({
   onAddAgent,
   onShowOrg,
   onShowWorkflow,
+  onShowCost,
   onQuickChat,
 }: {
   onAddAgent: () => void
   onShowOrg: () => void
   onShowWorkflow: () => void
+  onShowCost: () => void
   onQuickChat: () => void
 }) {
   const [isOpen, setIsOpen] = useState(false)
@@ -68,9 +70,12 @@ export function FloatingBar({
     },
     {
       icon: BarChart3,
-      label: 'Reports',
+      label: 'Cost Reports',
       color: '#8b5cf6',
-      action: () => setIsOpen(false),
+      action: () => {
+        onShowCost()
+        setIsOpen(false)
+      },
     },
   ]
 

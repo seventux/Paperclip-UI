@@ -3,6 +3,7 @@ import {
   GitBranch,
   Workflow,
   CheckSquare,
+  BarChart3,
   TrendingUp,
   DollarSign,
   Activity,
@@ -14,6 +15,7 @@ const navItems = [
   { id: 'org' as const, icon: GitBranch, label: 'Org Chart' },
   { id: 'workflow' as const, icon: Workflow, label: 'Workflow' },
   { id: 'tasks' as const, icon: CheckSquare, label: 'Tasks' },
+  { id: 'cost' as const, icon: BarChart3, label: 'Cost' },
 ]
 
 export function Sidebar({

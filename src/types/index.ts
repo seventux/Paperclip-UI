@@ -75,7 +75,9 @@ export type RealtimeEvent =
 
 export type RealtimeMode = 'connecting' | 'live' | 'simulated' | 'offline'
 
-export type ActiveView = 'org' | 'workflow' | 'tasks' | 'agent'
+export type ActiveView = 'org' | 'workflow' | 'tasks' | 'agent' | 'cost'
+
+export type CostPeriod = 'daily' | 'weekly' | 'monthly'
 
 export type NotificationType = 'status' | 'budget' | 'task' | 'system'
 
