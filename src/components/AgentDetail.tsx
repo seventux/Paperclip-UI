@@ -12,6 +12,7 @@ import {
   AlertCircle,
   Circle,
   Users,
+  MessageCircle,
 } from 'lucide-react'
 import { useStore } from '../store/useStore'
 import { Sparkline, generateSparkData } from './Sparkline'
@@ -89,7 +90,15 @@ function buildInitialActivity(emp: OrgEmployee, tasks: ReturnType<typeof useStor
 }
 
 export function AgentDetail() {
-  const { employees, tasks, selectedEmployee, setActiveView, heartbeats, updateEmployeeBudget } = useStore()
+  const {
+    employees,
+    tasks,
+    selectedEmployee,
+    setActiveView,
+    heartbeats,
+    updateEmployeeBudget,
+    openChat,
+  } = useStore()
   const emp = selectedEmployee ? employees[selectedEmployee] : null
 
   const [budgetInput, setBudgetInput] = useState<string>('')
@@ -222,6 +231,13 @@ export function AgentDetail() {
               <Coins className="w-3.5 h-3.5 text-slate-500" />
               {(emp.tokens_used / 1000).toFixed(1)}K / {(emp.budget / 1000).toFixed(0)}K tokens
             </div>
+            <button
+              onClick={() => openChat(emp.id)}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-indigo-500/15 border border-indigo-500/20 text-indigo-300 text-xs font-medium hover:bg-indigo-500/25 transition-colors cursor-pointer"
+            >
+              <MessageCircle className="w-3.5 h-3.5" />
+              Chat
+            </button>
           </div>
         </div>
 

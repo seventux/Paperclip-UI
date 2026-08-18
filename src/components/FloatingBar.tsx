@@ -20,10 +20,12 @@ export function FloatingBar({
   onAddAgent,
   onShowOrg,
   onShowWorkflow,
+  onQuickChat,
 }: {
   onAddAgent: () => void
   onShowOrg: () => void
   onShowWorkflow: () => void
+  onQuickChat: () => void
 }) {
   const [isOpen, setIsOpen] = useState(false)
 
@@ -59,7 +61,10 @@ export function FloatingBar({
       icon: MessageSquare,
       label: 'Quick Chat',
       color: '#f59e0b',
-      action: () => setIsOpen(false),
+      action: () => {
+        onQuickChat()
+        setIsOpen(false)
+      },
     },
     {
       icon: BarChart3,
@@ -105,6 +110,7 @@ export function FloatingBar({
         whileHover={{ scale: 1.05 }}
         whileTap={{ scale: 0.95 }}
         onClick={() => setIsOpen(!isOpen)}
+        aria-label="Quick actions"
         className={`
           w-14 h-14 rounded-2xl flex items-center justify-center
           shadow-2xl shadow-indigo-500/30 transition-all cursor-pointer

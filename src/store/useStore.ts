@@ -7,6 +7,8 @@ import type {
   RealtimeMode,
   ActiveView,
   AppNotification,
+  ChatMessage,
+  ChatToolCall,
 } from '../types'
 
 interface AppState {
@@ -19,6 +21,14 @@ interface AppState {
   realtimeMode: RealtimeMode
   heartbeats: Record<string, number>
   notifications: AppNotification[]
+  chatThreads: Record<string, ChatMessage[]>
+  chatOpen: boolean
+  chatAgent: string | null
+  openChat: (agentId?: string | null) => void
+  closeChat: () => void
+  setChatAgent: (agentId: string | null) => void
+  sendAgentMessage: (agentId: string, text: string) => void
+  clearChatThread: (agentId: string) => void
   setSelectedEmployee: (id: string | null) => void
   pushNotification: (notification: AppNotification) => void
   markNotificationRead: (id: string) => void
@@ -193,6 +203,62 @@ const initialTasks: Task[] = [
   { id: 't5', title: 'Write blog post for product launch', assignee: 'content_writers', status: 'in-progress', priority: 'high' },
 ]
 
+const toolSet: Record<string, Array<{ name: string; detail: string }>> = {
+  marketing: [
+    { name: 'campaign.search', detail: 'Searching campaign database' },
+    { name: 'content.draft', detail: 'Drafting marketing copy' },
+  ],
+  finance: [
+    { name: 'ledger.query', detail: 'Querying financial records' },
+    { name: 'report.build', detail: 'Compiling budget report' },
+  ],
+  ops: [
+    { name: 'infra.status', detail: 'Checking infrastructure status' },
+    { name: 'deploy.plan', detail: 'Planning deployment steps' },
+  ],
+  analyst: [
+    { name: 'data.query', detail: 'Querying analytics store' },
+    { name: 'model.fit', detail: 'Fitting forecast model' },
+  ],
+  default: [
+    { name: 'context.read', detail: 'Reading agent context' },
+    { name: 'task.plan', detail: 'Planning next steps' },
+  ],
+}
+
+function toolsForAgent(
+  emp: OrgEmployee
+): Array<{ name: string; detail: string }> {
+  const role = emp.role.toLowerCase()
+  if (role.includes('market') || role.includes('content')) return toolSet.marketing
+  if (role.includes('financ')) return toolSet.finance
+  if (role.includes('ops') || role.includes('admin')) return toolSet.ops
+  if (role.includes('analyst')) return toolSet.analyst
+  return toolSet.default
+}
+
+function buildAgentReply(emp: OrgEmployee, text: string): string {
+  const q = text.toLowerCase()
+  const pct = Math.round((emp.tokens_used / emp.budget) * 100)
+  if (q.includes('status') || q.includes('how are you')) {
+    return `All systems nominal on my end — status is ${emp.status} and my last heartbeat came through clean. ${emp.role} duties are running on schedule.`
+  }
+  if (q.includes('budget') || q.includes('token')) {
+    return `Current usage is ${(emp.tokens_used / 1000).toFixed(1)}K of my ${(emp.budget / 1000).toFixed(0)}K monthly token budget (${pct}%). I'm within limits — I'll flag it if I cross 80%.`
+  }
+  if (q.includes('task') || q.includes('todo') || q.includes('work')) {
+    return `I've reviewed my queue and pulled the latest assignments from the board. Say the word and I'll prioritize anything urgent or pick up a new task.`
+  }
+  if (q.includes('hello') || q.includes('hi') || q.includes('hey')) {
+    return `Hey! ${emp.name} here — ${emp.title.toLowerCase()}. What do you need? I can check my tasks, report on token usage, or dive into whatever you ask about.`
+  }
+  if (q.includes('thank')) {
+    return `Anytime. I'll keep an eye on things and ping you if anything needs attention.`
+  }
+  const preview = text.length > 60 ? `${text.slice(0, 60)}…` : text
+  return `Got it — I've looked into "${preview}" and it's on my radar. I'll follow up in this thread once I have something concrete for you.`
+}
+
 export const useStore = create<AppState>((set) => ({
   employees: initialEmployees,
   connections: initialConnections,
@@ -203,11 +269,118 @@ export const useStore = create<AppState>((set) => ({
   realtimeMode: 'connecting',
   heartbeats: {},
   notifications: initialNotifications,
+  chatThreads: {},
+  chatOpen: false,
+  chatAgent: null,
 
   setSelectedEmployee: (id) => set({ selectedEmployee: id }),
   setDraggedEmployee: (id) => set({ draggedEmployee: id }),
   setActiveView: (view) => set({ activeView: view }),
   setRealtimeMode: (mode) => set({ realtimeMode: mode }),
+
+  openChat: (agentId = null) =>
+    set((state) => ({
+      chatOpen: true,
+      chatAgent:
+        agentId && state.employees[agentId] ? agentId : state.chatAgent ?? null,
+    })),
+
+  closeChat: () => set({ chatOpen: false }),
+
+  setChatAgent: (agentId) =>
+    set((state) => ({
+      chatAgent: agentId && state.employees[agentId] ? agentId : null,
+    })),
+
+  clearChatThread: (agentId) =>
+    set((state) => {
+      if (!state.chatThreads[agentId]) return state
+      const chatThreads = { ...state.chatThreads }
+      delete chatThreads[agentId]
+      return { chatThreads }
+    }),
+
+  sendAgentMessage: (agentId, text) => {
+    const trimmed = text.trim()
+    const emp = useStore.getState().employees[agentId]
+    if (!trimmed || !emp) return
+
+    const base = Date.now()
+    const userMsg: ChatMessage = {
+      id: `m-${agentId}-${base}-u`,
+      role: 'user',
+      text: trimmed,
+      timestamp: base,
+    }
+    const agentMsgId = `m-${agentId}-${base}-a`
+    const toolCalls: ChatToolCall[] = toolsForAgent(emp).map((t, i) => ({
+      id: `tc-${agentId}-${base}-${i}`,
+      ...t,
+      status: 'running',
+    }))
+    const pendingMsg: ChatMessage = {
+      id: agentMsgId,
+      role: 'agent',
+      text: '',
+      timestamp: base,
+      pending: true,
+      toolCalls,
+    }
+
+    set((state) => ({
+      chatThreads: {
+        ...state.chatThreads,
+        [agentId]: [...(state.chatThreads[agentId] ?? []), userMsg, pendingMsg],
+      },
+    }))
+
+    // Simulated agent pipeline: tools resolve one by one, then the reply lands.
+    const updateTool = (index: number, status: ChatToolCall['status']) => {
+      set((state) => {
+        const thread = state.chatThreads[agentId]
+        if (!thread) return state
+        return {
+          chatThreads: {
+            ...state.chatThreads,
+            [agentId]: thread.map((m) =>
+              m.id === agentMsgId
+                ? {
+                    ...m,
+                    toolCalls: m.toolCalls?.map((tc, i) =>
+                      i === index ? { ...tc, status } : tc
+                    ),
+                  }
+                : m
+            ),
+          },
+        }
+      })
+    }
+
+    setTimeout(() => updateTool(0, 'success'), 500 + Math.random() * 400)
+    setTimeout(() => updateTool(1, 'success'), 1000 + Math.random() * 400)
+    setTimeout(() => {
+      set((state) => {
+        const thread = state.chatThreads[agentId]
+        if (!thread) return state
+        return {
+          chatThreads: {
+            ...state.chatThreads,
+            [agentId]: thread.map((m) =>
+              m.id === agentMsgId
+                ? {
+                    ...m,
+                    pending: false,
+                    text: buildAgentReply(emp, trimmed),
+                    toolCalls: m.toolCalls?.map((tc) => ({ ...tc, status: 'success' })),
+                  }
+                : m
+            ),
+          },
+        }
+      })
+    }, 1700 + Math.random() * 600)
+  },
 
   updateEmployeeStatus: (id, status) =>
     set((state) => {
@@ -355,8 +528,19 @@ export const useStore = create<AppState>((set) => ({
             notifications,
           }
         }
-        case 'heartbeat':
-          return state
+        case 'heartbeat': {
+          // Record the heartbeat so OrgNode pulses & AgentDetail activity
+          // timeline can react to it (regression: was dropped in the
+          // notifications refactor).
+          const last = state.heartbeats[event.agentId] ?? 0
+          if (last >= event.timestamp) return state
+          return {
+            heartbeats: {
+              ...state.heartbeats,
+              [event.agentId]: event.timestamp,
+            },
+          }
+        }
       }
     }),
 

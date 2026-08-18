@@ -13,12 +13,13 @@ import { FloatingBar } from './components/FloatingBar'
 import { OnboardingModal } from './components/OnboardingModal'
 import { CostChart } from './components/CostChart'
 import { SearchModal } from './components/SearchModal'
+import { AgentChat } from './components/AgentChat'
 import { useStore } from './store/useStore'
 import { paperclip } from './api/paperclip'
 import { useRealtime } from './hooks/useRealtime'
 
 function App() {
-  const { activeView, setActiveView } = useStore()
+  const { activeView, setActiveView, openChat } = useStore()
   const [showHero, setShowHero] = useState(true)
   const [showOnboarding, setShowOnboarding] = useState(false)
   const [showSearch, setShowSearch] = useState(false)
@@ -165,6 +166,7 @@ function App() {
           onAddAgent={() => setShowOnboarding(true)}
           onShowOrg={handleShowOrg}
           onShowWorkflow={handleShowWorkflow}
+          onQuickChat={() => openChat()}
         />
         {mobileDrawer}
         <OnboardingModal
@@ -175,6 +177,7 @@ function App() {
           isOpen={showSearch}
           onClose={() => setShowSearch(false)}
         />
+        <AgentChat />
       </div>
     )
   }
@@ -210,6 +213,7 @@ function App() {
         onAddAgent={() => setShowOnboarding(true)}
         onShowOrg={handleShowOrg}
         onShowWorkflow={handleShowWorkflow}
+        onQuickChat={() => openChat()}
       />
 
       {mobileDrawer}
@@ -223,6 +227,8 @@ function App() {
         isOpen={showSearch}
         onClose={() => setShowSearch(false)}
       />
+
+      <AgentChat />
     </div>
   )
 }

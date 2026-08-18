@@ -1,7 +1,7 @@
 # 📎 Paperclip UI — Project Guide
 
 > **Panduan lengkap agar project ini bisa dilanjutkan oleh model AI apapun.**
-> Terakhir diperbarui: 17 Agustus 2026
+> Terakhir diperbarui: 18 Agustus 2026
 
 ---
 
@@ -65,6 +65,7 @@
 │   │   ├── paperclip.ts              # 🔌 Connector ke Paperclip server API + WebSocket client
 │   │   └── realtimeSimulator.ts      # 📡 Simulated realtime feed (standalone/demo mode)
 │   ├── components/
+│   │   ├── AgentChat.tsx              # 💬 Chat drawer: per-agent threads, quick chat, tool-call tracing
 │   │   ├── AgentDetail.tsx            # 🤖 Full-page agent detail (activity, chart, tasks, budget, heartbeat)
 │   │   ├── ConnectorConfig.tsx        # ⚡ n8n-style workflow pipeline builder
 │   │   ├── CostChart.tsx              # 📊 Bar chart token usage per agent
@@ -190,6 +191,7 @@ Rencana awal ketika project ini dibuat:
 | `SearchModal.tsx` | ✅ Done | ⌘K modal, search agents/tasks, keyboard navigation |
 | `Sparkline.tsx` | ✅ Done | SVG sparkline with gradient fill, animated |
 | `AgentDetail.tsx` | ✅ Done | Full-page detail: activity timeline, token chart, task assignments, heartbeat schedule, budget settings |
+| `AgentChat.tsx` | ✅ Done | Chat drawer: thread list per agent, quick chat (simulated replies), tool-call tracing, clear thread |
 | `CostChart.tsx` | ✅ Done | Bar chart token usage per agent |
 | `Notifications.tsx` | ✅ Done | Bell dropdown: unread badge, list per tipe (status/budget/task/system), click-to-read, mark all read, clear all, close on outside click/Esc |
 
@@ -336,13 +338,19 @@ File: src/components/Notifications.tsx (NEW), src/store/useStore.ts, src/compone
 
 ### 🟢 Prioritas Rendah (Low Priority)
 
-#### 8. Agent Chat Interface
+#### 8. Agent Chat Interface ✅ DONE
 ```
-File: src/components/AgentChat.tsx (NEW)
+File: src/components/AgentChat.tsx (NEW), src/store/useStore.ts, src/types/index.ts, src/App.tsx, src/components/FloatingBar.tsx, src/components/AgentDetail.tsx, src/components/EmployeePool.tsx
 ```
-- Quick chat dengan agent langsung dari UI
-- Thread view untuk conversations
-- Tool call tracing display
+- ✅ **Chat drawer** — panel slide-in dari kanan (backdrop + Esc untuk menutup), bisa dibuka dari 3 tempat: FAB → **Quick Chat** (daftar thread), tombol **Chat** di Agent Detail page, icon chat di EmployeePool detail panel
+- ✅ **Thread view** — daftar semua agent dengan preview pesan terakhir + relative time; klik agent untuk membuka percakapannya
+- ✅ **Quick chat** — input pesan + tombol send (Enter juga bisa), bubble user (kanan, gradien indigo) vs agent (kiri, glass); empty state dengan hint
+- ✅ **Simulated agent replies** — aksi store `sendAgentMessage`: user message + pending agent message (typing dots) langsung muncul, tool calls resolve satu per satu (spinner → check), reply muncul ~2 detik kemudian; reply context-aware (keyword status/budget/task/greeting) sesuai role agent
+- ✅ **Tool call tracing** — tiap reply agent menampilkan kartu trace (nama tool mono, detail, status running/success); tool set berbeda per role (marketing/finance/ops/analyst/default)
+- ✅ **Clear conversation** — tombol trash menghapus thread agent tersebut
+- ✅ **State di store** — `chatThreads` (per agent), `chatOpen`, `chatAgent` + aksi `openChat`/`closeChat`/`setChatAgent`/`sendAgentMessage`/`clearChatThread`; thread persist selama sesi
+- ✅ **Fix regression realtime** — case `heartbeat` di `applyRealtimeEvent` tidak lagi memanggil `recordHeartbeat` sejak refactor notifications; dipulihkan (status dot OrgNode + activity timeline live kembali bekerja)
+- ✅ Verifikasi: `node scripts/chat-check.mjs 9222` (21 checks)
 
 #### 9. Cost Analytics Dashboard
 ```
@@ -528,6 +536,9 @@ node scripts/workflow-check.mjs 9222
 
 # Notifications (badge, seeded list, read/clear, notifikasi dari realtime events)
 node scripts/notifications-check.mjs 9222
+
+# Agent chat (FAB → Quick Chat, thread per agent, kirim pesan, tool-call trace, clear, integrasi Agent Detail)
+node scripts/chat-check.mjs 9222
 ```
 
 ## Troubleshooting

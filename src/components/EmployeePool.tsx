@@ -1,9 +1,9 @@
 import { motion } from 'framer-motion'
 import { useStore } from '../store/useStore'
-import { User, Coins, Clock, ChevronRight, X } from 'lucide-react'
+import { User, Coins, Clock, ChevronRight, X, MessageCircle } from 'lucide-react'
 
 export function EmployeePool() {
-  const { employees, selectedEmployee, setSelectedEmployee, setActiveView } = useStore()
+  const { employees, selectedEmployee, setSelectedEmployee, setActiveView, openChat } = useStore()
   const agentList = Object.values(employees)
   const selected = selectedEmployee ? employees[selectedEmployee] : null
 
@@ -25,12 +25,23 @@ export function EmployeePool() {
             <p className="text-[10px] uppercase tracking-widest text-slate-500 font-semibold">
               Agent Detail
             </p>
-            <button
-              onClick={() => setSelectedEmployee(null)}
-              className="p-1 rounded-lg hover:bg-white/10 transition-colors"
-            >
-              <X className="w-3.5 h-3.5 text-slate-400" />
-            </button>
+            <div className="flex items-center gap-1">
+              <button
+                onClick={() => openChat(selected.id)}
+                className="p-1 rounded-lg hover:bg-white/10 transition-colors"
+                title="Chat with agent"
+                aria-label="Chat with agent"
+              >
+                <MessageCircle className="w-3.5 h-3.5 text-slate-400" />
+              </button>
+              <button
+                onClick={() => setSelectedEmployee(null)}
+                className="p-1 rounded-lg hover:bg-white/10 transition-colors"
+                aria-label="Close agent detail"
+              >
+                <X className="w-3.5 h-3.5 text-slate-400" />
+              </button>
+            </div>
           </div>
 
           <div className="flex items-center gap-3 mb-4">

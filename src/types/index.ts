@@ -89,3 +89,26 @@ export interface AppNotification {
   read: boolean
   timestamp: number
 }
+
+export type ChatRole = 'user' | 'agent'
+
+export type ChatToolStatus = 'running' | 'success' | 'error'
+
+export interface ChatToolCall {
+  id: string
+  name: string
+  status: ChatToolStatus
+  /** Human-readable description of what the tool is doing */
+  detail?: string
+}
+
+export interface ChatMessage {
+  id: string
+  role: ChatRole
+  text: string
+  timestamp: number
+  /** Tool call trace attached to an agent reply */
+  toolCalls?: ChatToolCall[]
+  /** True while the agent is still "working" on the reply */
+  pending?: boolean
+}

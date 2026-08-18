@@ -12,6 +12,7 @@ A beautiful, glassmorphism-styled frontend for [Paperclip](https://github.com/se
 - **⚡ Workflow Builder** — n8n-style visual pipeline for agent automation
 - **📊 Task Board** — Kanban-style task tracking across your AI team
 - **🤖 Agent Onboarding** — Step-by-step wizard to hire new AI agents
+- **💬 Agent Chat** — Quick chat drawer with per-agent threads & tool-call tracing
 - **🔍 Agent Detail Page** — Full-page profile with activity timeline, token usage chart, tasks & budget settings
 - **💓 Heartbeat Animations** — Real-time visual status for active agents
 - **💰 Cost Dashboard** — Token usage tracking per agent
@@ -45,6 +46,7 @@ src/
 ├── api/
 │   └── paperclip.ts          # Paperclip server API connector
 ├── components/
+│   ├── AgentChat.tsx         # Chat drawer with per-agent threads & tool tracing
 │   ├── ConnectorConfig.tsx   # n8n-style workflow pipeline builder
 │   ├── CostChart.tsx         # Token usage bar chart
 │   ├── EmployeePool.tsx      # Right sidebar agent list & details
